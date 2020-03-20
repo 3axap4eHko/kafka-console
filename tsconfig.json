@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "resolveJsonModule": true,
+    "lib": [
+      "es2015.core",
+      "es6",
+      "esnext",
+      "ES2015.Promise"
+    ],
+    "declaration": false,
+    "rootDir": "src",
+    "outDir": "build"
+  },
+  "include": [
+    "src/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/__fixtures__/**.ts",
+    "**/__tests__/**.ts",
+    "**/__mocks__/**.ts"
+  ]
+}
