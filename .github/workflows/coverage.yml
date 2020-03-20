@@ -20,6 +20,9 @@ jobs:
         run: |
           node --version
           yarn --version
+      - name: Install dependencies
+        run: |
+          yarn
       - name: Build code
         run: |
           yarn build
