@@ -18,11 +18,14 @@ jobs:
       - name: Environment log
         id: env
         run: |
+          node --version
           yarn --version
+      - name: Build code
+        run: |
+          yarn build
       - name: Generate coverage report
         run: |
-          yarn --version
-          make -j test-ci-coverage
+          COVERAGE=1 yarn test
       - name: Upload coverage report
         uses: codecov/codecov-action@v1
         with:

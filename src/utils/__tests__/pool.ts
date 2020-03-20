@@ -44,4 +44,13 @@ describe('PullIterator test suite', () => {
     const result = await pool.toArray();
     expect(result).toEqual([1, 2, 3, 4]);
   });
+
+  it('Should call event', async () => {
+    const handleDone = jest.fn();
+    const pool = new Pool([]).onDone(handleDone).done();
+    const result = await pool.toArray();
+    expect(result).toEqual([]);
+    expect(handleDone).toBeCalled();
+
+  });
 });

@@ -60,7 +60,7 @@ export function resourceParser(resource: string) {
   if (/^transactional.?id$/i.test(resource)) {
     return ResourceTypes.TRANSACTIONAL_ID;
   }
-  if (/^delegateion.?token^/i.test(resource)) {
+  if (/^delegation.?token$/i.test(resource)) {
     return ResourceTypes.DELEGATION_TOKEN;
   }
   return ResourceTypes.UNKNOWN;
