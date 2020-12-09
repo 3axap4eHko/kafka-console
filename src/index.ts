@@ -1,4 +1,5 @@
 import Fs from 'fs';
+import Path from 'path';
 import { Message } from 'kafkajs';
 import { PassThrough } from 'stream';
 import { createInterface } from 'readline';
@@ -27,7 +28,8 @@ function getFormatter<T>(format: Format): Formatter<T> {
     case 'js':
       return formatters.js;
     default:
-      return require(format) as Formatter<T>;
+      const modulePath = Path.resolve(process.cwd(), format);
+      return require(modulePath) as Formatter<T>;
   }
 }
 
@@ -47,7 +49,13 @@ commander
 .option('-o, --output <filename>', 'write output to specified filename')
 .option('-a, --from-beginning', 'read messages from the beginning', true)
 .description('Consume kafka topic events')
-.action(async (topic, { group, format, fromBeginning, filename, parent: { brokers, logLevel, ssl, mechanism, username, password } }) => {
+.action(async (topic, {
+  group,
+  format,
+  fromBeginning,
+  filename,
+  parent: { brokers, logLevel, ssl, mechanism, username, password },
+}) => {
   const client = createClient(brokers, ssl, mechanism, username, password, logLevel);
   const output = filename ? Fs.createWriteStream(filename) : process.stdout;
 
@@ -95,7 +103,13 @@ commander
 .option('-h, --header <header>', 'set a static header', collect, [])
 .description('Produce kafka topic events')
 .action(async (topic, options) => {
-  const { format, header, input: filename, delay, parent: { brokers, logLevel, ssl, mechanism, username, password } } = options;
+  const {
+    format,
+    header,
+    input: filename,
+    delay,
+    parent: { brokers, logLevel, ssl, mechanism, username, password },
+  } = options;
   const client = createClient(brokers, ssl, mechanism, username, password, logLevel);
   const producer = await createProducer(client, topic);
   const staticHeaders = header.reduce((result: any, header: string) => {
