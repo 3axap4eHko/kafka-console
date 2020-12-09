@@ -152,9 +152,9 @@ commander
 commander
 .command('config')
 .requiredOption('-r, --resource <resource>', 'resource', resourceParser)
-.requiredOption('-n, --name <name>', 'name')
+.requiredOption('-n, --resourceName <resourceName>', 'resource name')
 .description('Describes config for specific resource')
-.action(async ({ resource, name, parent: { brokers, logLevel, ssl, mechanism, username, password } }) => {
+.action(async ({ resource, resourceName: name, parent: { brokers, logLevel, ssl, mechanism, username, password } }) => {
   const client = createClient(brokers, ssl, mechanism, username, password, logLevel);
   const admin = await createAdmin(client);
   const { resources } = await admin.describeConfigs({
