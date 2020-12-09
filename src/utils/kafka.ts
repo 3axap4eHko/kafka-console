@@ -6,7 +6,7 @@ import {
   SASLMechanism,
   logLevel,
   ConsumerSubscribeTopic,
-  Message, PartitionMetadata, Cluster, ResourceTypes, IHeaders,
+  Message, PartitionMetadata, Cluster, ResourceTypes, IHeaders, OauthbearerProviderResponse,
 } from 'kafkajs';
 import Pool from './pool';
 
@@ -92,13 +92,30 @@ interface KafkaCluster extends Cluster {
   metadata(): Metadata;
 }
 
+const SASLMap = {
+  'plain': (username: string, password: string) => ({ username, password }),
+  'scram-sha-256': (username: string, password: string) => ({ username, password }),
+  'scram-sha-512': (username: string, password: string) => ({ username, password }),
+};
+
+function getSASL(mechanism: SASLMechanism, ...args: string[]) {
+  if (!mechanism) {
+    return null;
+  }
+  if (mechanism in SASLMap) {
+    return (SASLMap as any)[mechanism](...args);
+  }
+  throw new Error(`SASL mechanism ${mechanism} is not supported`);
+}
+
 export function createClient(bootstrapServer: string, ssl: boolean, mechanism: SASLMechanism, username: string, password: string, level: string) {
+
   const options: KafkaConfig = {
     clientId: 'Kafka CLI',
     brokers: bootstrapServer.split(','),
     ssl,
     logLevel: logLevelParser(level),
-    ...(username && password && { sasl: { mechanism, username, password } }),
+    sasl: getSASL(mechanism, username, password),
   };
   return new Kafka(options);
 }
