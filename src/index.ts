@@ -68,7 +68,7 @@ commander
         [key]: value.toString(),
       };
     }, {});
-    const message = { headers: parsedHeaders, key: key.toString(), value: await formatter.decode(value) };
+    const message = { headers: parsedHeaders, key: key?.toString(), value: await formatter.decode(value) };
     output.write(JSON.stringify(message, null, '  ') + '\n');
   }
 });

@@ -53,6 +53,15 @@ Produce a json array data from stdin
 cat payload.json|jq -r -c .[]|kcli produce $KAFKA_TOPIC
 ```
 
+Payload single message input interface
+```typescript
+interface Payload {
+  key?: string; // kafka 
+  value: any;
+  headers?: { [key: string]: value };
+}
+```
+
 ### Formatters
 
 ```typescript
