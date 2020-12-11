@@ -1,3 +1,4 @@
+import Path from 'path';
 import { runInNewContext } from 'vm';
 
 export interface Encoder<T> {
@@ -24,3 +25,15 @@ export const json: Formatter<any> = {
   encode: (value: any) => JSON.stringify(value),
   decode: (value: string | Buffer) => JSON.parse(value.toString()),
 };
+
+export function getFormatter<T>(format: Format): Formatter<T> {
+  switch (format) {
+    case 'json':
+      return json;
+    case 'js':
+      return js;
+    default:
+      const modulePath = Path.resolve(process.cwd(), format);
+      return require(modulePath) as Formatter<T>;
+  }
+}

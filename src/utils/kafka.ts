@@ -3,10 +3,11 @@ import {
   Kafka,
   KafkaConfig,
   EachMessagePayload,
+  SASLOptions,
   SASLMechanism,
   logLevel,
   ConsumerSubscribeTopic,
-  Message, PartitionMetadata, Cluster, ResourceTypes, IHeaders, OauthbearerProviderResponse,
+  Message, PartitionMetadata, Cluster, ResourceTypes, IHeaders,
 } from 'kafkajs';
 import Pool from './pool';
 
@@ -98,24 +99,48 @@ const SASLMap = {
   'scram-sha-512': (username: string, password: string) => ({ username, password }),
 };
 
-function getSASL(mechanism: SASLMechanism, ...args: string[]) {
-  if (!mechanism) {
-    return null;
-  }
-  if (mechanism in SASLMap) {
-    return (SASLMap as any)[mechanism](...args);
-  }
-  throw new Error(`SASL mechanism ${mechanism} is not supported`);
+export interface CLISASLOptions {
+  mechanism: SASLMechanism;
+  username?: string;
+  password?: string;
+  authorizationIdentity?: string;
+  accessKeyId?: string;
+  secretAccessKey?: string;
+  sessionToken?: string;
+  oauthBearer?: string;
 }
 
-export function createClient(bootstrapServer: string, ssl: boolean, mechanism: SASLMechanism, username: string, password: string, level: string) {
+export function getSASL({
+                   mechanism,
+                   username,
+                   password,
+                   authorizationIdentity,
+                   accessKeyId,
+                   secretAccessKey,
+                   sessionToken,
+                   oauthBearer,
+                 }: CLISASLOptions): SASLOptions {
+  switch (mechanism) {
+    case 'plain':
+    case 'scram-sha-256':
+    case 'scram-sha-512':
+      return { mechanism, username, password };
+    case 'aws':
+      return { mechanism, authorizationIdentity, accessKeyId, secretAccessKey, sessionToken };
+    case 'oauthbearer':
+      const oauthBearerProvider = async () => ({ value: oauthBearer });
+      return { mechanism, oauthBearerProvider };
+  }
+}
+
+export function createClient(bootstrapServer: string, ssl: boolean, sasl: SASLOptions, level: string) {
 
   const options: KafkaConfig = {
     clientId: 'Kafka CLI',
     brokers: bootstrapServer.split(','),
     ssl,
     logLevel: logLevelParser(level),
-    sasl: getSASL(mechanism, username, password),
+    sasl,
   };
   return new Kafka(options);
 }

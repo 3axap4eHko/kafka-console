@@ -16,9 +16,9 @@ npm install -g kafka-console
 
 ### Consumer usage
 
-General usage
+General usage with authentication
 ```sh
-kcli consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP -b $KAFKA_BROKERS --ssl --sasl-username $KAFKA_USERNAME --sasl-password $KAFKA_PASSWORD
+kcli consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD
 ```
 
 Stdout `jq` example
@@ -35,7 +35,7 @@ kcli consume $KAFKA_TOPIC --format ./formatter/avro.js | jq
 
 General usage
 ```sh
-kcli produce $KAFKA_TOPIC -b $KAFKA_BROKERS --ssl --sasl-username $KAFKA_USERNAME --sasl-password $KAFKA_PASSWORD
+kcli produce $KAFKA_TOPIC -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD
 ```
 
 Produce a json data from stdin with custom formatter
