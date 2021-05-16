@@ -1,3 +1,4 @@
+import commander from 'commander';
 import * as Fs from 'fs';
 import { createClient, createConsumer, getSASL, CLISASLOptions } from '../utils/kafka';
 import { getFormatter } from '../utils/formatters';
@@ -7,8 +8,8 @@ export default async function consume(topic: string, {
   format,
   fromBeginning,
   filename,
-  parent: { brokers, logLevel, ssl, ...rest },
 }: any) {
+  const { brokers, logLevel, ssl, ...rest } = commander.opts();
   const sasl = getSASL(rest as CLISASLOptions);
   const client = createClient(brokers, ssl, sasl, logLevel);
   const output = filename ? Fs.createWriteStream(filename) : process.stdout;

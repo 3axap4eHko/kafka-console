@@ -1,3 +1,4 @@
+import commander from 'commander';
 import * as Fs from 'fs';
 import { PassThrough } from 'stream';
 import { createInterface } from 'readline';
@@ -32,8 +33,8 @@ export default async function produce(topic: string, {
   header,
   input: filename,
   delay,
-  parent: { brokers, logLevel, ssl, ...rest },
 }: any) {
+  const { brokers, logLevel, ssl, ...rest } = commander.opts();
   const sasl = getSASL(rest as CLISASLOptions);
   const client = createClient(brokers, ssl, sasl, logLevel);
   const producer = await createProducer(client, topic);

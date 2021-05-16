@@ -1,7 +1,9 @@
-import { createAdmin, createClient, getSASL } from '../utils/kafka';
+import commander from 'commander';
+import { createAdmin, createClient, getSASL, CLISASLOptions } from '../utils/kafka';
 
-export default async function createTopic(topic: string, { parent: { brokers, logLevel, ssl, ...rest } }: any) {
-  const sasl = getSASL(rest);
+export default async function createTopic(topic: string) {
+  const { brokers, logLevel, ssl, ...rest } = commander.opts();
+  const sasl = getSASL(rest as CLISASLOptions);
   const client = createClient(brokers, ssl, sasl, logLevel);
   const admin = await createAdmin(client);
 
