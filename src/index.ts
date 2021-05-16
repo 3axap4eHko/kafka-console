@@ -36,7 +36,7 @@ commander
 .requiredOption('-g, --group <group>', 'consumer group name')
 .option('-f, --format <format>', 'message type decoding', 'json')
 .option('-o, --output <filename>', 'write output to specified filename')
-.option('-a, --from-beginning', 'read messages from the beginning', true)
+.option('-a, --from-beginning', 'read messages from the beginning', false)
 .description('Consume kafka topic events')
 .action(consumeCommand);
 
