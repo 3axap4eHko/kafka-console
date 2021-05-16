@@ -26,19 +26,19 @@
   "homepage": "https://github.com/3axap4eHko/kafka-console#readme",
   "devDependencies": {
     "@types/commander": "^2.12.2",
-    "@types/jest": "^26.0.21",
-    "@types/js-yaml": "^4.0.0",
-    "@types/node": "^14.14.35",
+    "@types/jest": "^26.0.23",
+    "@types/js-yaml": "^4.0.1",
+    "@types/node": "^15.3.0",
     "@types/winston": "^2.4.4",
-    "dotenv": "^8.2.0",
+    "dotenv": "^9.0.2",
     "jest": "^26.6.3",
-    "ts-jest": "^26.5.4",
+    "ts-jest": "^26.5.6",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.4"
   },
   "dependencies": {
     "commander": "^7.2.0",
-    "evnty": "^0.6.3",
+    "evnty": "^0.6.8",
     "kafkajs": "^1.15.0"
   }
 }
