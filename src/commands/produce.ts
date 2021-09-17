@@ -1,4 +1,3 @@
-import commander from 'commander';
 import * as Fs from 'fs';
 import { PassThrough } from 'stream';
 import { createInterface } from 'readline';
@@ -28,13 +27,8 @@ async function getInput<T>(filename: string): Promise<Pool<T>> {
   }
 }
 
-export default async function produce(topic: string, {
-  format,
-  header,
-  input: filename,
-  delay,
-}: any) {
-  const { brokers, logLevel, ssl, ...rest } = commander.opts();
+export default async function produce(topic: string, opts: any, { parent }: any) {
+  const { format, header, input: filename, delay, brokers, logLevel, ssl, ...rest } = { ...parent.opts(), ...opts } as any;
   const sasl = getSASL(rest as CLISASLOptions);
   const client = createClient(brokers, ssl, sasl, logLevel);
   const producer = await createProducer(client, topic);

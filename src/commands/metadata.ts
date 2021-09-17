@@ -1,8 +1,7 @@
-import commander from 'commander';
 import { createClient, createCluster, getSASL, CLISASLOptions } from '../utils/kafka';
 
-export default async function metadata() {
-  const { brokers, logLevel, ssl, ...rest } = commander.opts();
+export default async function metadata(opts: any, { parent }: any) {
+  const { brokers, logLevel, ssl, ...rest } = { ...parent.opts(), ...opts } as any;
   const sasl = getSASL(rest as CLISASLOptions);
   const client = createClient(brokers, ssl, sasl, logLevel);
   const cluster = await createCluster(client);

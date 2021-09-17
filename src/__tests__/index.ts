@@ -1,5 +1,4 @@
-import '../index.ts';
-import commander from 'commander';
+import commander from '../index';
 
 describe('Cli test suite', () => {
   it('Should call commander', () => {

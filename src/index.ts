@@ -1,4 +1,4 @@
-import commander from 'commander';
+import { Command } from 'commander';
 import {
   resourceParser,
 } from './utils/kafka';
@@ -16,6 +16,8 @@ const { version } = require('../package.json');
 function collect(value: any, result: any[]) {
   return result.concat([value]);
 }
+
+const commander = new Command();
 
 commander
 .option('-b, --brokers <brokers>', 'bootstrap server host', process.env.KAFKA_BROKERS || 'localhost:9092')
@@ -101,3 +103,5 @@ commander.on('--help', function() {
 });
 
 commander.parse(process.argv);
+
+export default commander;
