@@ -1,5 +1,6 @@
 /.idea
 /.github
+/coverage
 /src
 /jest.config.js
 /tsconfig.json
