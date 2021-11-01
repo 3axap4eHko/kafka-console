@@ -1,6 +1,6 @@
 module.exports = {
   verbose: true,
-  collectCoverage: !!process.env.TRAVIS || !!process.env.COVERAGE,
+  collectCoverage: !!process.env.CI || !!process.env.COVERAGE,
   collectCoverageFrom: [
     'src/**/*.ts',
   ],
@@ -18,6 +18,6 @@ module.exports = {
   setupFiles: ['dotenv/config'],
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.ts',
-    !process.env.TRAVIS && '<rootDir>/src/**/__tests__/**/*.ts',
+    !process.env.CI && '<rootDir>/src/**/__tests__/**/*.ts',
   ].filter(Boolean),
 };
