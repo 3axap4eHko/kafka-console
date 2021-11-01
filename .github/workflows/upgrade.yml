@@ -1,0 +1,74 @@
+name: Autoupdate
+
+on:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.org/
+
+      - name: Environment log
+        id: env
+        run: |
+          node --version
+          yarn --version
+
+      - name: Install dependecies
+        run: |
+          yarn install --frozen-lockfile
+
+      - name: Upgrade
+        id: updates
+        run: |
+          PENDING=$(yarn outdated --json|tail -1|jq '.data.body'|jq length)
+          echo "::set-output name=PENDING::$PENDING"
+          yarn upgrade
+          DONE=$(yarn outdated --json|tail -1|jq '.data.body'|jq length)
+          echo "::set-output name=DONE::$DONE"
+
+      - name: Run build process
+        if: steps.updates.outputs.PENDING != steps.updates.outputs.DONE
+        run: |
+          yarn build
+
+      - name: Run tests
+        if: steps.updates.outputs.PENDING != steps.updates.outputs.DONE
+        run: |
+          yarn test
+
+      - name: Commit updates
+        if: steps.updates.outputs.PENDING != steps.updates.outputs.DONE
+        run: |
+          git config --global user.email "3axap4eHko@github.com"
+          git config --global user.name "Ivan Zakharchanka"
+          git add --all
+          git commit -am "autoupdate"
+          npm version patch
+
+      - name: Publish
+        if: steps.updates.outputs.PENDING != steps.updates.outputs.DONE
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          npm publish
+          git push
+          git push --tags
+
+      - name: Push updates
+        if: steps.updates.outputs.PENDING != steps.updates.outputs.DONE
+        run: |
+          git push
+          git push --tags

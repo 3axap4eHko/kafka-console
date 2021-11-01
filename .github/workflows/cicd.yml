@@ -1,4 +1,4 @@
-name: Report Coverage
+name: CI/CD
 
 on: [push, pull_request]
 
@@ -7,29 +7,36 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [13.x]
+        node-version: [14.x]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.org/
+
       - name: Environment log
         id: env
         run: |
           node --version
           yarn --version
+
       - name: Install dependencies
         run: |
-          yarn
+          yarn install --frozen-lockfile
+
       - name: Build code
         run: |
           yarn build
-      - name: Generate coverage report
+
+      - name: Testing
         run: |
-          COVERAGE=1 yarn test
-      - name: Upload coverage report
+          yarn build
+
+      - name: Upload test coverage
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
