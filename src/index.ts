@@ -13,7 +13,7 @@ import deleteTopicCommand from './commands/deleteTopic';
 
 const { version } = require('../package.json');
 
-function collect(value: any, result: any[]) {
+export function collect(value: any, result: any[]) {
   return result.concat([value]);
 }
 
