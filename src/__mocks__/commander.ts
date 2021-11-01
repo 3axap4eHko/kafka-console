@@ -1,16 +1,18 @@
+export const commander: any = {
+  command: jest.fn(() => commander),
+  option: jest.fn(() => commander),
+  version: jest.fn(() => commander),
+  requiredOption: jest.fn(() => commander),
+  description: jest.fn(() => commander),
+  action: jest.fn(() => commander),
+  alias: jest.fn(() => commander),
+  on: jest.fn(() => commander),
+  parse: jest.fn(() => commander),
+};
+
 export class Command {
   constructor() {
-    const self = this as any;
-
-    self.command = jest.fn(() => this);
-    self.option = jest.fn(() => this);
-    self.version = jest.fn(() => this);
-    self.requiredOption = jest.fn(() => this);
-    self.description = jest.fn(() => this);
-    self.action = jest.fn(() => this);
-    self.alias = jest.fn(() => this);
-    self.on = jest.fn(() => this);
-    self.parse = jest.fn(() => this);
+    Object.assign(this, commander);
   }
 }
 
