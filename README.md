@@ -56,7 +56,7 @@ cat payload.json|jq -r -c .[]|kcli produce $KAFKA_TOPIC
 Payload single message input interface
 ```typescript
 interface Payload {
-  key?: string; // kafka 
+  key?: string; // kafka
   value: any;
   headers?: { [key: string]: value };
 }
@@ -81,7 +81,7 @@ export interface Formatter<T> {
 
 ## License
 License [The MIT License](http://opensource.org/licenses/MIT)
-Copyright (c) 2020 Ivan Zakharchanka
+Copyright (c) 2021 Ivan Zakharchanka
 
 [npm-url]: https://www.npmjs.com/package/kafka-console
 [downloads-image]: https://img.shields.io/npm/dw/kafka-console.svg?maxAge=43200
