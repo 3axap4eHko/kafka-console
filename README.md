@@ -9,8 +9,10 @@ Command line tool to sufficiently and easy work with Kafka
 
   - [Features](#features)
   - [Installing](#installing)
-  - [Commands](#commands)
   - [Examples](#examples)
+    - [Consumer](#consumer)
+    - [Producer](#producer)
+    - [Formatters](#formatters)
   - [Environment](#environment)
   - [License](#license)
 
@@ -32,13 +34,52 @@ Command line tool to sufficiently and easy work with Kafka
 npm install -g kafka-console
 ```
 
-## Commands
-
-
-
 ## Examples
 
-### Consumer usage
+### Common options
+```
+  -b, --brokers <brokers>                bootstrap server host (default: "localhost:9092")
+  -l, --log-level <logLevel>             log level
+  -t, --timeout <timeout>                set a timeout of operation (default: "0")
+  --ssl                                  enable ssl (default: false)
+  --mechanism <mechanism>                sasl mechanism
+  --username <username>                  sasl username
+  --password <password>                  sasl password
+  --auth-id <authId>                     sasl aws authorization identity
+  --access-key-id <accessKeyId>          sasl aws access key id
+  --secret-access-key <secretAccessKey>  sasl aws secret access key
+  --session-token <seccionToken>         sasl aws session token
+  --oauth-bearer <oauthBearer>           sasl oauth bearer token
+  -V, --version                          output the version number
+  -h, --help                             display help for command
+```
+
+### Commands
+```
+  consume [options] <topic>              Consume kafka topic events
+  produce [options] <topic>              Produce kafka topic events
+  metadata                               Displays kafka server metadata
+  list|ls [options]                      Lists kafka topics
+  config [options]                       Describes config for specific resource
+  create <topic>                         Creates kafka topic
+  delete <topic>                         Deletes kafka topic
+  help [command]                         display help for command
+```
+
+### Consumer
+
+`kcli consume [options] <topic>`
+
+#### Options
+```
+  -g, --group <group>      consumer group name
+  -f, --format <format>    message type decoding json, js, raw (default: "json")
+  -o, --output <filename>  write output to specified filename
+  -a, --from-beginning     read messages from the beginning (default: false)
+  -c, --count <count>      a number of messages to read (default: null)
+  -s, --skip <skip>        a number of messages to skip (default: 0)
+  -h, --help               display help for command
+```
 
 General usage with authentication
 ```sh
@@ -55,7 +96,18 @@ Custom data formatter example
 kcli consume $KAFKA_TOPIC --format ./formatter/avro.js | jq
 ```
 
-### Producer usage
+### Producer
+
+`kcli produce [options] <topic>`
+
+#### Options
+```
+  -f, --format <format>   message format encoding json, js, raw (default: "json")
+  -i, --input <filename>  input filename
+  -d, --delay <delay>     delay in ms after event emitting (default: 0)
+  -h, --header <header>   set a static header (default: [])
+  --help                  display help for command
+```
 
 General usage
 ```sh
