@@ -1,6 +1,6 @@
 {
   "name": "kafka-console",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Kafka CLI tool",
   "main": "index.js",
   "bin": {
@@ -17,7 +17,14 @@
     "type": "git",
     "url": "git+https://github.com/3axap4eHko/kafka-console.git"
   },
-  "keywords": ["kafka", "cli", "commands", "sasl", "consumer", "producer"],
+  "keywords": [
+    "kafka",
+    "cli",
+    "commands",
+    "sasl",
+    "consumer",
+    "producer"
+  ],
   "author": "Ivan Zakharchanka",
   "license": "MIT",
   "bugs": {
