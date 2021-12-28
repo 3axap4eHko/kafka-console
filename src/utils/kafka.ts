@@ -9,7 +9,7 @@ import {
   ConsumerSubscribeTopic,
   Message, PartitionMetadata, Cluster, ResourceTypes, IHeaders,
 } from 'kafkajs';
-import Pool from './pool';
+import Pool, { PoolOptions } from './pool';
 
 export interface EncoderOptions {
   headers: IHeaders;
@@ -159,7 +159,7 @@ export async function createAdmin(client: Kafka) {
   return admin;
 }
 
-export async function createConsumer(client: Kafka, group: string, topic: string, fromBeginning: boolean = false) {
+export async function createConsumer(client: Kafka, group: string, topic: string, fromBeginning: boolean = false, poolOptions: PoolOptions = {}) {
   const consumerConfig: ConsumerConfig = {
     groupId: group,
   };
@@ -173,7 +173,7 @@ export async function createConsumer(client: Kafka, group: string, topic: string
   await consumer.connect();
   await consumer.subscribe(consumerOptions);
 
-  const pool = new Pool<EachMessagePayload>();
+  const pool = new Pool<EachMessagePayload>([], poolOptions);
   pool.onDone(() => {
     consumer.disconnect();
   });

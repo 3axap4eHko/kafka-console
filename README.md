@@ -5,14 +5,38 @@ Command line tool to sufficiently and easy work with Kafka
 [![NPM version][npm-image]][npm-url]
 [![Downloads][downloads-image]][npm-url]
 
+## Table of Contents
 
-## Installation
+  - [Features](#features)
+  - [Installing](#installing)
+  - [Commands](#commands)
+  - [Examples](#examples)
+  - [Environment](#environment)
+  - [License](#license)
+
+## Features
+
+- Producer
+- Consumer groups with seek and timeout
+- Built-in message encoders/decoders with types: json, js, raw
+- Custom message encoders/decoders as a js module
+- Message headers
+- GZIP compression
+- Plain, SSL and SASL_SSL implementations
+- Admin client
+- TypeScript support
+
+## Installing
 
 ```sh
 npm install -g kafka-console
 ```
 
-## Usage
+## Commands
+
+
+
+## Examples
 
 ### Consumer usage
 
@@ -70,7 +94,7 @@ export interface Encoder<T> {
 }
 
 export interface Decoder<T> {
-  (value: string | Buffer): Promise<T> | T;
+  (value: Buffer): Promise<T> | T;
 }
 
 export interface Formatter<T> {
@@ -78,6 +102,19 @@ export interface Formatter<T> {
   decode: Decoder<T>;
 }
 ```
+
+## Environment
+
+ - KAFKA_BROKERS
+ - KAFKA_TIMEOUT
+ - KAFKA_MECHANISM
+ - KAFKA_USERNAME
+ - KAFKA_PASSWORD
+ - KAFKA_AUTH_ID
+ - KAFKA_ACCESS_KEY_ID
+ - KAFKA_SECRET_ACCESS_KEY
+ - KAFKA_SESSION_TOKEN
+ - KAFKA_OAUTH_BEARER
 
 ## License
 License [The MIT License](http://opensource.org/licenses/MIT)

@@ -18,10 +18,11 @@ describe('Formatters test suite', () => {
     });
 
     it('JSON formatter should decode via JSON object', () => {
-        const json = '{}';
+        const json = Buffer.from('{}');
         const parse = jest.spyOn(JSON, 'parse');
-        Formatters.json.decode(json);
-        expect(parse).toHaveBeenCalledWith(json);
+        const result = Formatters.json.decode(json);
+        expect(result).toEqual({});
+        expect(parse).toHaveBeenCalledWith(json.toString());
         parse.mockRestore();
     });
 
@@ -34,10 +35,11 @@ describe('Formatters test suite', () => {
     });
 
     it('JSON formatter should decode via JSON object', () => {
-        const json = '{}';
+        const json = Buffer.from('module.exports = {}');
         const parse = jest.spyOn(vm, 'runInNewContext');
-        Formatters.js.decode(json);
-        expect(parse).toHaveBeenCalledWith(json, expect.any(Object));
+        const result = Formatters.js.decode(json);
+        expect(result).toEqual({});
+        expect(parse).toHaveBeenCalledWith(json.toString(), expect.any(Object));
         parse.mockRestore();
     });
 });

@@ -3,7 +3,7 @@ import event, { Listener } from 'evnty';
 export interface Item<T = any> {
   promise?: Promise<T>;
   resolve?: (value: any) => void;
-  reject?: (value: any) => void
+  reject?: (value: any) => void;
 }
 
 export function createItem<T>() {
@@ -16,26 +16,49 @@ export function createItem<T>() {
 }
 
 export class CancelToken {
+  constructor(public timeout: boolean) {}
+}
 
+export interface PoolOptions {
+  skip?: number;
+  count?: number;
+  timeout?: number;
 }
 
 export default class Pool<T> {
   private pool: Item<T>[] = [createItem<T>()];
   private doneEvent = event();
+  private index: number;
+  private skip: number;
+  private count: number;
+  private timerId: NodeJS.Timeout;
 
-  constructor(values: T[] = []) {
-    values.forEach(value => this.push(value));
+  constructor(values: T[] = [], { skip = 0, count = Infinity, timeout }: PoolOptions = {}) {
+    this.index = 0;
+    this.skip = skip;
+    this.count = count + skip;
+    if (typeof timeout === 'number') {
+      this.timerId = setTimeout(() => this.done(true), timeout);
+    }
+    values.forEach((value) => this.push(value));
   }
 
   push(value: T | Promise<T>) {
-    this.pool[this.pool.length - 1].resolve(value);
-    this.pool.push(createItem<T>());
+    if (this.index >= this.skip && this.index < this.count) {
+      this.pool[this.pool.length - 1].resolve(value);
+      this.pool.push(createItem<T>());
+    }
+    this.index++;
+
+    if (this.index >= this.count) {
+      this.done();
+    }
 
     return this;
   }
 
-  done() {
-    this.pool[this.pool.length - 1].resolve(new CancelToken());
+  done(timeout: boolean = false) {
+    this.pool[this.pool.length - 1].resolve(new CancelToken(timeout));
 
     return this;
   }
@@ -63,7 +86,8 @@ export default class Pool<T> {
         this.pool.shift();
 
         if (value instanceof CancelToken) {
-          this.doneEvent();
+          clearTimeout(this.timerId);
+          this.doneEvent(value.timeout);
           return {
             i: ++i,
             done: true,
@@ -76,5 +100,5 @@ export default class Pool<T> {
         };
       },
     };
-  };
+  }
 }

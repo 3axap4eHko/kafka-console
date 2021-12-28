@@ -16,8 +16,8 @@ module.exports = {
   coverageDirectory: './coverage',
   transformIgnorePatterns: ['/node_modules/'],
   setupFiles: ['dotenv/config'],
-  testMatch: [
-    '<rootDir>/src/**/__tests__/**/*.ts',
-    !process.env.CI && '<rootDir>/src/**/__tests__/**/*.ts',
-  ].filter(Boolean),
+  testMatch: [process.env.TEST_E2E
+    ? '<rootDir>/src/**/__tests__/**/*.ts'
+    : '<rootDir>/src/**/__tests__/**/!(*.e2e).ts'
+  ],
 };

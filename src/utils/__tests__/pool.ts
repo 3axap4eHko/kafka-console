@@ -9,6 +9,7 @@ describe('PullIterator test suite', () => {
     }
     expect(result).toEqual([]);
   });
+
   it('Should iterate a pool with initial values', async () => {
     const pool = new Pool([1, 2, 3, 4, 5]).done();
     const result = [];
@@ -50,7 +51,14 @@ describe('PullIterator test suite', () => {
     const pool = new Pool([]).onDone(handleDone).done();
     const result = await pool.toArray();
     expect(result).toEqual([]);
-    expect(handleDone).toBeCalled();
+    expect(handleDone).toBeCalledWith(false);
+  });
 
+  it('Should call event on timeout', async () => {
+    const handleDone = jest.fn();
+    const pool = new Pool([], { timeout: 0 }).onDone(handleDone);
+    const result = await pool.toArray();
+    expect(result).toEqual([]);
+    expect(handleDone).toBeCalledWith(true);
   });
 });
