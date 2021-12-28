@@ -17,7 +17,7 @@
     "type": "git",
     "url": "git+https://github.com/3axap4eHko/kafka-console.git"
   },
-  "keywords": [],
+  "keywords": ["kafka", "cli", "commands", "sasl", "consumer", "producer"],
   "author": "Ivan Zakharchanka",
   "license": "MIT",
   "bugs": {
