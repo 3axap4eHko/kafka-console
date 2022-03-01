@@ -1139,9 +1139,9 @@ dotenv@^10.0.0:
   integrity sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==
 
 electron-to-chromium@^1.4.71:
-  version "1.4.71"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.71.tgz#17056914465da0890ce00351a3b946fd4cd51ff6"
-  integrity sha512-Hk61vXXKRb2cd3znPE9F+2pLWdIOmP7GjiTj45y6L3W/lO+hSnUSUhq+6lEaERWBdZOHbk2s3YV5c9xVl3boVw==
+  version "1.4.74"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.74.tgz#f444036a90ffe75f6423b635e77edd4cc9e6cb2f"
+  integrity sha512-DvQ20M0I4dIH8KcAo7n7E4OEeNafZ1N8z6g6ck+ALCM0ZoV6mpjaX6ekjs31zKlqPzacU3lmjG9PZEa1mQhEpQ==
 
 emittery@^0.8.1:
   version "0.8.1"
@@ -1208,9 +1208,9 @@ esutils@^2.0.2:
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
 
 evnty@^0.6.19:
-  version "0.6.20"
-  resolved "https://registry.yarnpkg.com/evnty/-/evnty-0.6.20.tgz#612e45b1c46009a3d7a4b830ae2bea1e83f8aa96"
-  integrity sha512-Uga9vZMZZCVYNLrpmzF2AShRZ98PjbVTNBzl44MqfW7wXmxucoEhpgR7YL0j81MQRuJWsxiWC5DqAcmfDCPK4g==
+  version "0.6.21"
+  resolved "https://registry.yarnpkg.com/evnty/-/evnty-0.6.21.tgz#a1a821651a735b4fdb53d8a564295f679a483659"
+  integrity sha512-F8lTE5f/6L+zz6uic6egebvb4Y637IJ6H8J2pFd8a4dR8aR7NMt2kiYaL2yJAC9JWiHu95w/IbkP/8CONQ+XJw==
 
 execa@^5.0.0:
   version "5.1.1"
@@ -2681,9 +2681,9 @@ typedarray-to-buffer@^3.1.5:
     is-typedarray "^1.0.0"
 
 typescript@^4.5.4:
-  version "4.5.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.5.5.tgz#d8c953832d28924a9e3d37c73d729c846c5896f3"
-  integrity sha512-TCTIul70LyWe6IJWT8QSYeA54WQe8EjQFU4wY52Fasj5UKx88LNYKCgBEHcOMOrFF1rKGbD8v/xcNWVUq9SymA==
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.6.2.tgz#fe12d2727b708f4eef40f51598b3398baa9611d4"
+  integrity sha512-HM/hFigTBHZhLXshn9sN37H085+hQGeJHJ/X7LpBWLID/fbc2acUMfU+lGD98X81sKP+pFa9f0DZmCwB9GnbAg==
 
 universalify@^0.1.2:
   version "0.1.2"
