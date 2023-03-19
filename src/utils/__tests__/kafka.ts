@@ -1,4 +1,4 @@
-import { logLevel, ResourceTypes } from 'kafkajs';
+import { logLevel, ConfigResourceTypes } from 'kafkajs';
 import * as Kafka from '../kafka';
 
 describe('Kafka test suite', () => {
@@ -14,13 +14,12 @@ describe('Kafka test suite', () => {
 
     describe('resourceParser', () => {
         it('Should parse a string to ResourceTypes', () => {
-            expect(Kafka.resourceParser('any')).toEqual(ResourceTypes.ANY);
-            expect(Kafka.resourceParser('topic')).toEqual(ResourceTypes.TOPIC);
-            expect(Kafka.resourceParser('group')).toEqual(ResourceTypes.GROUP);
-            expect(Kafka.resourceParser('cluster')).toEqual(ResourceTypes.CLUSTER);
-            expect(Kafka.resourceParser('transactional_id')).toEqual(ResourceTypes.TRANSACTIONAL_ID);
-            expect(Kafka.resourceParser('delegation_token')).toEqual(ResourceTypes.DELEGATION_TOKEN);
-            expect(Kafka.resourceParser('')).toEqual(ResourceTypes.UNKNOWN);
+            expect(Kafka.resourceParser('any')).toEqual(ConfigResourceTypes.UNKNOWN);
+            expect(Kafka.resourceParser('topic')).toEqual(ConfigResourceTypes.TOPIC);
+            expect(Kafka.resourceParser('broker')).toEqual(ConfigResourceTypes.BROKER);
+            expect(Kafka.resourceParser('broker_logger')).toEqual(ConfigResourceTypes.BROKER_LOGGER);
+            expect(Kafka.resourceParser('logger')).toEqual(ConfigResourceTypes.BROKER_LOGGER);
+            expect(Kafka.resourceParser('')).toEqual(ConfigResourceTypes.UNKNOWN);
         });
     });
 

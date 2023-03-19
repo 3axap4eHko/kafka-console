@@ -6,8 +6,8 @@ import {
   SASLOptions,
   SASLMechanism,
   logLevel,
-  ConsumerSubscribeTopic,
-  Message, PartitionMetadata, Cluster, ResourceTypes, IHeaders,
+  ConsumerSubscribeTopics,
+  Message, PartitionMetadata, Cluster, ConfigResourceTypes, IHeaders,
 } from 'kafkajs';
 import Pool, { PoolOptions } from './pool';
 
@@ -47,24 +47,21 @@ export function logLevelParser(level: string) {
 
 export function resourceParser(resource: string) {
   if (/^any$/i.test(resource)) {
-    return ResourceTypes.ANY;
+    return ConfigResourceTypes.UNKNOWN;
   }
   if (/^topic$/i.test(resource)) {
-    return ResourceTypes.TOPIC;
+    return ConfigResourceTypes.TOPIC;
   }
-  if (/^group$/i.test(resource)) {
-    return ResourceTypes.GROUP;
+  if (/^broker$/i.test(resource)) {
+    return ConfigResourceTypes.BROKER;
   }
-  if (/^cluster$/i.test(resource)) {
-    return ResourceTypes.CLUSTER;
+  if (/^broker_logger$/i.test(resource)) {
+    return ConfigResourceTypes.BROKER_LOGGER;
   }
-  if (/^transactional.?id$/i.test(resource)) {
-    return ResourceTypes.TRANSACTIONAL_ID;
+  if (/^logger$/i.test(resource)) {
+    return ConfigResourceTypes.BROKER_LOGGER;
   }
-  if (/^delegation.?token$/i.test(resource)) {
-    return ResourceTypes.DELEGATION_TOKEN;
-  }
-  return ResourceTypes.UNKNOWN;
+  return ConfigResourceTypes.UNKNOWN;
 }
 
 interface BrokerMetadata {
@@ -90,7 +87,7 @@ interface Metadata {
 }
 
 interface KafkaCluster extends Cluster {
-  metadata(): Metadata;
+  metadata(): Promise<Metadata>;
 }
 
 const SASLMap = {
@@ -164,8 +161,8 @@ export async function createConsumer(client: Kafka, group: string, topic: string
     groupId: group,
   };
 
-  const consumerOptions: ConsumerSubscribeTopic = {
-    topic,
+  const consumerOptions: ConsumerSubscribeTopics = {
+    topics: [topic],
     fromBeginning,
   };
 

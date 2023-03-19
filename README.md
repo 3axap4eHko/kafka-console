@@ -41,6 +41,7 @@ npm install -g kafka-console
   -b, --brokers <brokers>                bootstrap server host (default: "localhost:9092")
   -l, --log-level <logLevel>             log level
   -t, --timeout <timeout>                set a timeout of operation (default: "0")
+  -p, --pretty                           pretty print json
   --ssl                                  enable ssl (default: false)
   --mechanism <mechanism>                sasl mechanism
   --username <username>                  sasl username
@@ -170,7 +171,7 @@ export interface Formatter<T> {
 
 ## License
 License [The MIT License](http://opensource.org/licenses/MIT)
-Copyright (c) 2021 Ivan Zakharchanka
+Copyright (c) 2023 Ivan Zakharchanka
 
 [npm-url]: https://www.npmjs.com/package/kafka-console
 [downloads-image]: https://img.shields.io/npm/dw/kafka-console.svg?maxAge=43200

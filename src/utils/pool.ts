@@ -63,7 +63,7 @@ export default class Pool<T> {
     return this;
   }
 
-  onDone(callback: Listener) {
+  onDone(callback: Listener<[T]>) {
     this.doneEvent.on(callback);
 
     return this;

@@ -3,7 +3,7 @@ import { createClient, createConsumer, getSASL, CLISASLOptions } from '../utils/
 import { getFormatter } from '../utils/formatters';
 
 export default async function consume(topic: string, opts: any, { parent }: any) {
-  const { group, format, fromBeginning, count, skip, filename, brokers, logLevel, timeout, ssl, ...saslOptions } = { ...parent.opts(), ...opts } as any;
+  const { group, format, fromBeginning, count, skip, filename, brokers, logLevel, timeout, ssl, pretty, ...saslOptions } = { ...parent.opts(), ...opts } as any;
   const sasl = getSASL(saslOptions as CLISASLOptions);
   const client = createClient(brokers, ssl, sasl, logLevel);
   const output = filename ? Fs.createWriteStream(filename) : process.stdout;
@@ -26,6 +26,7 @@ export default async function consume(topic: string, opts: any, { parent }: any)
       };
     }, {});
     const message = { headers: parsedHeaders, key: key?.toString(), value: await formatter.decode(value) };
-    output.write(JSON.stringify(message, null, '  ') + '\n');
+    const space = pretty ? 2 : 0;
+    output.write(JSON.stringify(message, null, space) + '\n');
   }
 }

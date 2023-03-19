@@ -10,6 +10,7 @@ import listCommand from './commands/list';
 import configCommand from './commands/config';
 import createTopicCommand from './commands/createTopic';
 import deleteTopicCommand from './commands/deleteTopic';
+import fetchTopicOffsets from './commands/fetchTopicOffsets';
 
 const { version } = require('../package.json');
 
@@ -27,6 +28,7 @@ commander
 .option('-b, --brokers <brokers>', 'bootstrap server host', process.env.KAFKA_BROKERS || 'localhost:9092')
 .option('-l, --log-level <logLevel>', 'log level')
 .option('-t, --timeout <timeout>', 'set a timeout of operation', toInt, process.env.KAFKA_TIMEOUT || '0')
+.option('-p, --pretty', 'pretty print', false)
 .option('--ssl', 'enable ssl', false)
 .option('--mechanism <mechanism>', 'sasl mechanism', process.env.KAFKA_MECHANISM)
 .option('--username <username>', 'sasl username', process.env.KAFKA_USERNAME)
@@ -80,14 +82,20 @@ commander
 .action(configCommand);
 
 commander
-.command('create <topic>')
+.command('topic:create <topic>')
 .description('Creates kafka topic')
 .action(createTopicCommand);
 
 commander
-.command('delete <topic>')
+.command('topic:delete <topic>')
 .description('Deletes kafka topic')
 .action(deleteTopicCommand);
+
+commander
+.command('topic:offsets <topic> [timestamp]')
+.description('Shows kafka topic offsets')
+.action(fetchTopicOffsets);
+
 
 commander.on('--help', function() {
   [
