@@ -1,7 +1,7 @@
 import { createClient, createCluster, getSASL, CLISASLOptions } from '../utils/kafka';
 
 export default async function list(opts: any, { parent }: any) {
-  const { all, brokers, logLevel, ssl, ...rest } = { ...parent.opts(), ...opts } as any;
+  const { all, brokers, logLevel, ssl, pretty, ...rest } = { ...parent.opts(), ...opts } as any;
   const sasl = getSASL(rest as CLISASLOptions);
   const client = createClient(brokers, ssl, sasl, logLevel);
   const cluster = await createCluster(client);
@@ -9,8 +9,7 @@ export default async function list(opts: any, { parent }: any) {
   .filter(topic => all || !topic.isInternal)
   .map(({ topic }) => topic);
 
-  for(const topic of topics) {
-    console.log(topic);
-  }
+  const space = pretty ? 2 : 0;
+  console.log(JSON.stringify(topics, null, space));
   await cluster.disconnect();
 }
