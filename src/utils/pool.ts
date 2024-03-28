@@ -27,7 +27,7 @@ export interface PoolOptions {
 
 export default class Pool<T> {
   private pool: Item<T>[] = [createItem<T>()];
-  private doneEvent = event();
+  private doneEvent = event<boolean, unknown>();
   private index: number;
   private skip: number;
   private count: number;
@@ -63,7 +63,7 @@ export default class Pool<T> {
     return this;
   }
 
-  onDone(callback: Listener<[T]>) {
+  onDone(callback: Listener<boolean>) {
     this.doneEvent.on(callback);
 
     return this;

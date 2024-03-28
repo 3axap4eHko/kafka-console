@@ -73,6 +73,13 @@ commander
 .description('Lists kafka topics')
 .action(listCommand);
 
+commander
+.command('list')
+.alias('ls')
+.option('-a, --all', 'include internal topics')
+.description('Lists kafka topics')
+.action(listCommand);
+
 
 commander
 .command('config')
