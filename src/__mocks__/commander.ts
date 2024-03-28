@@ -8,6 +8,7 @@ export const commander: any = {
   alias: jest.fn(() => commander),
   on: jest.fn(() => commander),
   parse: jest.fn(() => commander),
+  parseAsync: jest.fn(() => Promise.resolve()),
 };
 
 export class Command {

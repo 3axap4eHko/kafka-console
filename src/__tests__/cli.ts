@@ -5,6 +5,6 @@ const commander = new Command();
 
 describe('Cli test suite', () => {
   it('Should call commander', () => {
-    expect(commander.parse).toHaveBeenCalled();
+    expect(commander.parseAsync).toHaveBeenCalled();
   });
 });
