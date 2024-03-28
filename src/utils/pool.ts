@@ -41,9 +41,6 @@ export default class Pool<T> {
       this.timerId = setTimeout(() => this.done(true), timeout);
     }
     values.forEach((value) => this.push(value));
-    if (count === 0) {
-      Promise.resolve().then(() => this.done());
-    }
   }
 
   push(value: T | Promise<T>) {
@@ -81,6 +78,9 @@ export default class Pool<T> {
   }
 
   [Symbol.asyncIterator]() {
+    if (this.count === 0) {
+      Promise.resolve().then(() => this.done());
+    }
     let i = 0;
     return {
       i,
