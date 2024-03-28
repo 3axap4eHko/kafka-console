@@ -170,16 +170,16 @@ export async function createConsumer(client: Kafka, group: string, topic: string
   await consumer.connect();
   await consumer.subscribe(consumerOptions);
 
-  const pool = new Pool<EachMessagePayload>([], poolOptions);
-  pool.onDone(() => {
-    consumer.disconnect();
-  });
-
-  consumer.run({
+  await consumer.run({
     eachMessage: async (payload) => {
       pool.push(payload);
     },
   }).catch(e => console.error(e));
+
+  const pool = new Pool<EachMessagePayload>([], poolOptions);
+  pool.onDone(() => {
+    consumer.disconnect();
+  });
 
   return pool;
 }
