@@ -42,7 +42,7 @@ export default class Pool<T> {
     }
     values.forEach((value) => this.push(value));
     if (count === 0) {
-      this.done(false);
+      Promise.resolve().then(() => this.done());
     }
   }
 
