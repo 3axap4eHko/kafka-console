@@ -41,6 +41,9 @@ export default class Pool<T> {
       this.timerId = setTimeout(() => this.done(true), timeout);
     }
     values.forEach((value) => this.push(value));
+    if (count === 0) {
+      this.done(false);
+    }
   }
 
   push(value: T | Promise<T>) {
