@@ -74,14 +74,6 @@ commander
 .action(listCommand);
 
 commander
-.command('list')
-.alias('ls')
-.option('-a, --all', 'include internal topics')
-.description('Lists kafka topics')
-.action(listCommand);
-
-
-commander
 .command('config')
 .requiredOption('-r, --resource <resource>', 'resource', resourceParser)
 .requiredOption('-n, --resourceName <resourceName>', 'resource name')
