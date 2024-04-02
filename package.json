@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "commander": "^12.0.0",
-    "evnty": "^2.1.92",
+    "evnty": "^2.1.93",
     "kafkajs": "^2.2.4"
   }
 }
