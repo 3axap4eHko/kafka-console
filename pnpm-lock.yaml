@@ -9,8 +9,8 @@ dependencies:
     specifier: ^12.0.0
     version: 12.0.0
   evnty:
-    specifier: ^2.1.98
-    version: 2.1.98
+    specifier: ^2.1.99
+    version: 2.1.99
   kafkajs:
     specifier: ^2.2.4
     version: 2.2.4
@@ -1167,8 +1167,8 @@ packages:
     hasBin: true
     dev: true
 
-  /evnty@2.1.98:
-    resolution: {integrity: sha512-o7zipuiL7g4ZlJzn8Gb99KwsKTjHaGb/LRK31vkLeCIDdcaE3JzCfeCuEGpdbDrA8qLbCcQR7vcYOIMDxMLY1g==}
+  /evnty@2.1.99:
+    resolution: {integrity: sha512-PtdhQZm+qK+JV4ykU5trt3sG9bJG86KpWxIJf9CO4Yr/ShblTvryd85YWN5oM7e8oSryL7wAmzNtLFVA0252Yw==}
     dev: false
 
   /execa@5.1.1:
