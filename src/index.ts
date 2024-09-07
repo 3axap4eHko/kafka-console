@@ -42,10 +42,10 @@ commander
 
 commander
   .command('consume <topic>')
-  .requiredOption('-g, --group <group>', 'consumer group name')
-  .option('-f, --format <format>', 'message type decoding json, js, raw', 'json')
+  .requiredOption('-g, --group <group>', 'consumer group name', `kafka-console-consumer-${Date.now()}`)
+  .option('-d, --data-format <data-format>', 'messages data-format: json, js, raw', 'json')
   .option('-o, --output <filename>', 'write output to specified filename')
-  .option('-a, --from-beginning', 'read messages from the beginning', false)
+  .option('-f, --from <from>', 'read messages from the specific timestamp in milliseconds or ISO 8601 format. Set 0 to read from the beginning')
   .option('-c, --count <count>', 'a number of messages to read', toInt, Infinity)
   .option('-s, --skip <skip>', 'a number of messages to skip', toInt, 0)
   .description('Consume kafka topic events')
@@ -54,7 +54,7 @@ commander
 
 commander
   .command('produce <topic>')
-  .option('-f, --format <format>', 'message format encoding json, js, raw', 'json')
+  .option('-d, --data-format <data-format>', 'messages data-format: json, js, raw', 'json')
   .option('-i, --input <filename>', 'input filename')
   .option('-d, --delay <delay>', 'delay in ms after event emitting', toInt, 0)
   .option('-h, --header <header>', 'set a static header', collect, [])
@@ -102,16 +102,16 @@ commander.on('--help', function () {
     'Examples:',
     '',
     '  General consumer usage',
-    '  $ kcli consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD',
+    '  $ npx kafka-console -b $KAFKA_BROKERS consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD',
     '',
     '  Extracting consumer output with jq',
-    '  $ kcli consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP --f ./formatter/avro.js | jq .value',
+    '  $ npx kafka-console consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP --f ./formatter/avro.js | jq .value',
     '',
     '  General producer usage',
-    '  $ kcli produce $KAFKA_TOPIC -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD',
+    '  $ npx kafka-console produce $KAFKA_TOPIC -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD',
     '',
     '  Preparing producer payload json data with jq',
-    '  $ cat payload.json|jq -r -c .[]|kcli produce $KAFKA_TOPIC -f ./formatter/avro.js',
+    '  $ cat payload.json|jq -r -c .[]|npx kafka-console produce $KAFKA_TOPIC -f ./formatter/avro.js',
     '',
   ].forEach(msg => console.log(msg));
 });

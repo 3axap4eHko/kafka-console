@@ -7,7 +7,12 @@ import {
   SASLMechanism,
   logLevel,
   ConsumerSubscribeTopics,
-  Message, PartitionMetadata, Cluster, ConfigResourceTypes, IHeaders,
+  TopicPartitionOffset,
+  Message,
+  PartitionMetadata,
+  Cluster,
+  ConfigResourceTypes,
+  IHeaders,
 } from 'kafkajs';
 import Pool, { PoolOptions } from './pool';
 
@@ -108,15 +113,15 @@ export interface CLISASLOptions {
 }
 
 export function getSASL({
-                   mechanism,
-                   username,
-                   password,
-                   authorizationIdentity,
-                   accessKeyId,
-                   secretAccessKey,
-                   sessionToken,
-                   oauthBearer,
-                 }: CLISASLOptions): SASLOptions {
+  mechanism,
+  username,
+  password,
+  authorizationIdentity,
+  accessKeyId,
+  secretAccessKey,
+  sessionToken,
+  oauthBearer,
+}: CLISASLOptions): SASLOptions {
   switch (mechanism) {
     case 'plain':
     case 'scram-sha-256':
@@ -156,15 +161,32 @@ export async function createAdmin(client: Kafka) {
   return admin;
 }
 
-export async function createConsumer(client: Kafka, group: string, topic: string, fromBeginning: boolean = false, poolOptions: PoolOptions = {}) {
+export async function createConsumer(client: Kafka, group: string, topic: string, from?: string, poolOptions: PoolOptions = {}) {
   const consumerConfig: ConsumerConfig = {
     groupId: group,
   };
 
   const consumerOptions: ConsumerSubscribeTopics = {
     topics: [topic],
-    fromBeginning,
+    fromBeginning: from === '0',
   };
+
+  const offsets: TopicPartitionOffset[] = [];
+  if (from && from !== '0') {
+    const timestamp = /^\d+$/.test(from)
+      ? new Date(parseInt(from, 10)).getTime()
+      : Date.parse(from);
+
+    if (Number.isNaN(timestamp)) {
+      throw new Error(`Invalid timestamp "${from}"`);
+    }
+
+    const admin = await createAdmin(client);
+    const partitionOffsets = await admin.fetchTopicOffsetsByTimestamp(topic, timestamp);
+    for (const { partition, offset } of partitionOffsets) {
+      offsets.push({ topic, partition, offset });
+    }
+  }
 
   const consumer = client.consumer(consumerConfig);
   await consumer.connect();
@@ -175,6 +197,10 @@ export async function createConsumer(client: Kafka, group: string, topic: string
       pool.push(payload);
     },
   }).catch(e => console.error(e));
+
+  for (const offset of offsets) {
+    consumer.seek(offset);
+  }
 
   const pool = new Pool<EachMessagePayload>([], poolOptions);
   pool.onDone(() => {

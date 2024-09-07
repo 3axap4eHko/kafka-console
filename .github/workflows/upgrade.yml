@@ -19,3 +19,25 @@ jobs:
           email: 3axap4eHko@github.com
           npm_token: ${{ secrets.NPM_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js 🛠️
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install pnpm 📦
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          run_install: false
+
+      - name: Test published 🔩
+        run: |
+          pnpm init
+          pnpm dlx kafka-console --help
+        shell: bash
+

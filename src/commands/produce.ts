@@ -28,7 +28,7 @@ async function getInput<T>(filename: string): Promise<Pool<T>> {
 }
 
 export default async function produce(topic: string, opts: any, { parent }: any) {
-  const { format, header, input: filename, delay, brokers, logLevel, ssl, ...rest } = { ...parent.opts(), ...opts } as any;
+  const { dataFormat, header, input: filename, delay, brokers, logLevel, ssl, ...rest } = { ...parent.opts(), ...opts } as any;
   const sasl = getSASL(rest as CLISASLOptions);
   const client = createClient(brokers, ssl, sasl, logLevel);
   const producer = await createProducer(client, topic);
@@ -45,7 +45,7 @@ export default async function produce(topic: string, opts: any, { parent }: any)
     return result;
   }, {});
 
-  const formatter = getFormatter(format);
+  const formatter = getFormatter(dataFormat);
   const input = await getInput<Message>(filename);
   for await (let { key, value, headers } of input) {
     const encodedValue = await formatter.encode(value);
