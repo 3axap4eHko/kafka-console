@@ -41,7 +41,7 @@ npm install -g kafka-console
   -b, --brokers <brokers>                bootstrap server host (default: "localhost:9092")
   -l, --log-level <logLevel>             log level
   -t, --timeout <timeout>                set a timeout of operation (default: "0")
-  -p, --pretty                           pretty print json
+  -p, --pretty                           pretty print (default: false)
   --ssl                                  enable ssl (default: false)
   --mechanism <mechanism>                sasl mechanism
   --username <username>                  sasl username
@@ -62,8 +62,9 @@ npm install -g kafka-console
   metadata                               Displays kafka server metadata
   list|ls [options]                      Lists kafka topics
   config [options]                       Describes config for specific resource
-  create <topic>                         Creates kafka topic
-  delete <topic>                         Deletes kafka topic
+  topic:create <topic>                   Creates kafka topic
+  topic:delete <topic>                   Deletes kafka topic
+  topic:offsets <topic> [timestamp]      Shows kafka topic offsets
   help [command]                         display help for command
 ```
 
@@ -73,13 +74,13 @@ npm install -g kafka-console
 
 #### Options
 ```
-  -g, --group <group>      consumer group name
-  -f, --format <format>    message type decoding json, js, raw (default: "json")
-  -o, --output <filename>  write output to specified filename
-  -a, --from-beginning     read messages from the beginning (default: false)
-  -c, --count <count>      a number of messages to read (default: null)
-  -s, --skip <skip>        a number of messages to skip (default: 0)
-  -h, --help               display help for command
+  -g, --group <group>              consumer group name (default: "kafka-console-consumer-TIMESTAMP")
+  -d, --data-format <data-format>  messages data-format: json, js, raw (default: "json")
+  -o, --output <filename>          write output to specified filename
+  -f, --from <from>                read messages from the specific timestamp in milliseconds or ISO 8601 format. Set 0 to read from the beginning
+  -c, --count <count>              a number of messages to read (default: null)
+  -s, --skip <skip>                a number of messages to skip (default: 0)
+  -h, --help                       display help for command
 ```
 
 General usage with authentication
@@ -87,14 +88,14 @@ General usage with authentication
 kcli consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD
 ```
 
-Stdout `jq` example
+Stdout from timestamp `jq` example
 ```sh
-kcli consume $KAFKA_TOPIC | jq .value
+kcli consume $KAFKA_TOPIC --from '1970-01-01T00:00:00.000Z' | jq .value
 ```
 
 Custom data formatter example
 ```sh
-kcli consume $KAFKA_TOPIC --format ./formatter/avro.js | jq
+kcli consume $KAFKA_TOPIC --data-format ./formatter/avro.js | jq
 ```
 
 ### Producer
@@ -103,11 +104,11 @@ kcli consume $KAFKA_TOPIC --format ./formatter/avro.js | jq
 
 #### Options
 ```
-  -f, --format <format>   message format encoding json, js, raw (default: "json")
-  -i, --input <filename>  input filename
-  -d, --delay <delay>     delay in ms after event emitting (default: 0)
-  -h, --header <header>   set a static header (default: [])
-  --help                  display help for command
+  -d, --data-format <data-format>  messages data-format: json, js, raw (default: "json")
+  -i, --input <filename>           input filename
+  -w, --wait <wait>                wait the time in ms after sending a message (default: 0)
+  -h, --header <header>            set a static header (default: [])
+  --help                           display help for command
 ```
 
 General usage
@@ -117,7 +118,7 @@ kcli produce $KAFKA_TOPIC -b $KAFKA_BROKERS --ssl --mechanism plain --username $
 
 Produce a json data from stdin with custom formatter
 ```sh
-cat payload.txt|kcli produce $KAFKA_TOPIC --format ./formatter/avro.js
+cat payload.txt|kcli produce $KAFKA_TOPIC --data-format ./formatter/avro.js
 ```
 
 Produce a json data from stdin

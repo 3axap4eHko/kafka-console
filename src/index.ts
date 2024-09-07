@@ -56,7 +56,7 @@ commander
   .command('produce <topic>')
   .option('-d, --data-format <data-format>', 'messages data-format: json, js, raw', 'json')
   .option('-i, --input <filename>', 'input filename')
-  .option('-d, --delay <delay>', 'delay in ms after event emitting', toInt, 0)
+  .option('-w, --wait <wait>', 'wait the time in ms after sending a message', toInt, 0)
   .option('-h, --header <header>', 'set a static header', collect, [])
   .description('Produce kafka topic events')
   .action(produceCommand);
