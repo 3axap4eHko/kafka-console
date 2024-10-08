@@ -34,7 +34,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.13",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^20.16.10",
+    "@types/node": "^20.16.11",
     "dotenv": "^16.4.5",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
@@ -46,5 +46,5 @@
     "evnty": "^2.1.106",
     "kafkajs": "^2.2.4"
   },
-  "packageManager": "pnpm@9.12.0"
+  "packageManager": "pnpm@9.12.1"
 }
