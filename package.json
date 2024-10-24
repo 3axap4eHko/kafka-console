@@ -32,9 +32,9 @@
   },
   "homepage": "https://github.com/3axap4eHko/kafka-console#readme",
   "devDependencies": {
-    "@types/jest": "^29.5.13",
+    "@types/jest": "^29.5.14",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^20.16.14",
+    "@types/node": "^20.17.0",
     "dotenv": "^16.4.5",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
