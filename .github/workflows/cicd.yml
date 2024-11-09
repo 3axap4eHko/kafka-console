@@ -9,6 +9,6 @@ jobs:
       - name: Run CI/CD Pipeline
         uses: zource-dev/action@v1
         with:
-          node_version: '20.x'
+          node_version: '22.x'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}

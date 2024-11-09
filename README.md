@@ -70,7 +70,7 @@ npm install -g kafka-console
 
 ### Consumer
 
-`kcli consume [options] <topic>`
+`npx kafka-console consume [options] <topic>`
 
 #### Options
 ```
@@ -85,22 +85,24 @@ npm install -g kafka-console
 
 General usage with authentication
 ```sh
-kcli consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD
+npx kafka-console --brokers $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD consume $KAFKA_TOPIC --group $KAFKA_TOPIC_GROUP
 ```
 
 Stdout from timestamp `jq` example
 ```sh
-kcli consume $KAFKA_TOPIC --from '1970-01-01T00:00:00.000Z' | jq .value
+npx kafka-console consume $KAFKA_TOPIC --from 0 | jq .value
 ```
 
 Custom data formatter example
 ```sh
-kcli consume $KAFKA_TOPIC --data-format ./formatter/avro.js | jq
+npx kafka-console consume $KAFKA_TOPIC --data-format ./formatter/avro.js | jq
 ```
 
 ### Producer
 
-`kcli produce [options] <topic>`
+```sh
+npx kafka-console produce [options] <topic>
+```
 
 #### Options
 ```
@@ -113,22 +115,22 @@ kcli consume $KAFKA_TOPIC --data-format ./formatter/avro.js | jq
 
 General usage
 ```sh
-kcli produce $KAFKA_TOPIC -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD
+npx kafka-console produce $KAFKA_TOPIC -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD
 ```
 
 Produce a json data from stdin with custom formatter
 ```sh
-cat payload.txt|kcli produce $KAFKA_TOPIC --data-format ./formatter/avro.js
+npx kafka-console payload.txt|kcli produce $KAFKA_TOPIC --data-format ./formatter/avro.js
 ```
 
 Produce a json data from stdin
 ```sh
-node payloadGenerator.js|kcli produce $KAFKA_TOPIC
+node payloadGenerator.js|npx kafka-console produce $KAFKA_TOPIC
 ```
 
 Produce a json array data from stdin
 ```sh
-cat payload.json|jq -r -c .[]|kcli produce $KAFKA_TOPIC
+cat payload.json|jq -r -c .[]|npx kafka-console produce $KAFKA_TOPIC
 ```
 
 Payload single message input interface
@@ -157,7 +159,7 @@ export interface Formatter<T> {
 }
 ```
 
-## Environment
+## Supported Environment Variables
 
  - KAFKA_BROKERS
  - KAFKA_TIMEOUT
