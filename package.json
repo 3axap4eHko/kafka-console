@@ -45,6 +45,5 @@
     "commander": "^12.1.0",
     "evnty": "^2.1.106",
     "kafkajs": "^2.2.4"
-  },
-  "packageManager": "pnpm@9"
+  }
 }
