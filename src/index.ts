@@ -93,6 +93,7 @@ commander
 commander
   .command('topic:offsets <topic> [timestamp]')
   .description('Shows kafka topic offsets')
+  .option('-g, --group <group>', 'consumer group name', `kafka-console-consumer-${Date.now()}`)
   .action(fetchTopicOffsets);
 
 
