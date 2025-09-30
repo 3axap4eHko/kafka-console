@@ -1,6 +1,6 @@
 {
   "name": "kafka-console",
-  "version": "2.1.11",
+  "version": "2.1.12",
   "description": "Kafka CLI tool",
   "main": "index.js",
   "bin": {
