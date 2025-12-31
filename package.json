@@ -46,5 +46,5 @@
     "evnty": "^2.1.106",
     "kafkajs": "^2.2.4"
   },
-  "packageManager": "pnpm@10.26.2"
+  "packageManager": "pnpm@10.27.0"
 }
