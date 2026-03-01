@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from 'vitest';
 import Pool from '../pool';
 
 describe('PullIterator test suite', () => {
@@ -61,18 +62,18 @@ describe('PullIterator test suite', () => {
   });
 
   it('Should call event', async () => {
-    const handleDone = jest.fn();
+    const handleDone = vi.fn();
     const pool = new Pool([]).onDone(handleDone).done();
     const result = await pool.toArray();
     expect(result).toEqual([]);
-    expect(handleDone).toBeCalledWith(false);
+    expect(handleDone).toHaveBeenCalledWith(false);
   });
 
   it('Should call event on timeout', async () => {
-    const handleDone = jest.fn();
+    const handleDone = vi.fn();
     const pool = new Pool([], { timeout: 0 }).onDone(handleDone);
     const result = await pool.toArray();
     expect(result).toEqual([]);
-    expect(handleDone).toBeCalledWith(true);
+    expect(handleDone).toHaveBeenCalledWith(true);
   });
 });

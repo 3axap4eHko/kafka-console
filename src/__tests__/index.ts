@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { Command } from 'commander';
 import { collect } from '../index';
 

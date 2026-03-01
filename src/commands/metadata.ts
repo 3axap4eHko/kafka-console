@@ -5,8 +5,11 @@ export default async function metadata(opts: any, { parent }: any) {
   const sasl = getSASL(rest as CLISASLOptions);
   const client = createClient(brokers, ssl, sasl, logLevel);
   const cluster = await createCluster(client);
-  const metadata = await cluster.metadata();
-  const space = pretty ? 2 : 0;
-  console.log(JSON.stringify(metadata, null, space));
-  await cluster.disconnect();
+  try {
+    const metadata = await cluster.metadata();
+    const space = pretty ? 2 : 0;
+    console.log(JSON.stringify(metadata, null, space));
+  } finally {
+    await cluster.disconnect();
+  }
 }

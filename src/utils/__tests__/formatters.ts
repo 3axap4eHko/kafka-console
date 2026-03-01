@@ -1,4 +1,4 @@
-import vm from 'vm';
+import { describe, it, expect, vi } from 'vitest';
 import * as Formatters from '../formatters';
 
 describe('Formatters test suite', () => {
@@ -11,7 +11,7 @@ describe('Formatters test suite', () => {
 
     it('JSON formatter should encode via JSON object', () => {
         const data = {};
-        const stringify = jest.spyOn(JSON, 'stringify');
+        const stringify = vi.spyOn(JSON, 'stringify');
         Formatters.json.encode(data);
         expect(stringify).toHaveBeenCalledWith(data);
         stringify.mockRestore();
@@ -19,7 +19,7 @@ describe('Formatters test suite', () => {
 
     it('JSON formatter should decode via JSON object', () => {
         const json = Buffer.from('{}');
-        const parse = jest.spyOn(JSON, 'parse');
+        const parse = vi.spyOn(JSON, 'parse');
         const result = Formatters.json.decode(json);
         expect(result).toEqual({});
         expect(parse).toHaveBeenCalledWith(json.toString());
@@ -28,18 +28,15 @@ describe('Formatters test suite', () => {
 
     it('JS formatter should encode via vm', () => {
         const data = {};
-        const stringify = jest.spyOn(JSON, 'stringify');
+        const stringify = vi.spyOn(JSON, 'stringify');
         Formatters.js.encode(data);
         expect(stringify).toHaveBeenCalledWith(data, null, expect.anything());
         stringify.mockRestore();
     });
 
-    it('JSON formatter should decode via JSON object', () => {
-        const json = Buffer.from('module.exports = {}');
-        const parse = jest.spyOn(vm, 'runInNewContext');
-        const result = Formatters.js.decode(json);
-        expect(result).toEqual({});
-        expect(parse).toHaveBeenCalledWith(json.toString(), expect.any(Object));
-        parse.mockRestore();
+    it('JS formatter should decode via vm', () => {
+        const code = Buffer.from('module.exports = { foo: "bar" }');
+        const result = Formatters.js.decode(code);
+        expect(result).toEqual({ foo: 'bar' });
     });
 });

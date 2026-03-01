@@ -1,4 +1,4 @@
-import event, { Listener } from 'evnty';
+import { createEvent, Listener } from 'evnty';
 
 export interface Item<T = any> {
   promise?: Promise<T>;
@@ -27,11 +27,12 @@ export interface PoolOptions {
 
 export default class Pool<T> {
   private pool: Item<T>[] = [createItem<T>()];
-  private doneEvent = event<boolean, unknown>();
+  private doneEvent = createEvent<boolean, unknown>();
   private index: number;
   private skip: number;
   private count: number;
   private timerId: NodeJS.Timeout;
+  private isDone = false;
 
   constructor(values: T[] = [], { skip = 0, count = Infinity, timeout }: PoolOptions = {}) {
     this.index = 0;
@@ -44,6 +45,7 @@ export default class Pool<T> {
   }
 
   push(value: T | Promise<T>) {
+    if (this.isDone) return this;
     if (this.index >= this.skip && this.index < this.count) {
       this.pool[this.pool.length - 1].resolve(value);
       this.pool.push(createItem<T>());
@@ -58,6 +60,8 @@ export default class Pool<T> {
   }
 
   done(timeout: boolean = false) {
+    if (this.isDone) return this;
+    this.isDone = true;
     this.pool[this.pool.length - 1].resolve(new CancelToken(timeout));
 
     return this;

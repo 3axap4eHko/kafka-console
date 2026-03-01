@@ -12,7 +12,7 @@ jobs:
       - name: Run CI/CD Pipeline
         uses: zource-dev/action@v1
         with:
-          node_version: '22.x'
+          node_version: '24.x'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           autoupdate: minor
           username: Ivan Zakharchanka
@@ -26,13 +26,13 @@ jobs:
       - name: Setup Node.js 🛠️
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: 'https://registry.npmjs.org/'
 
       - name: Install pnpm 📦
         uses: pnpm/action-setup@v3
         with:
-          version: 9
+          version: 10
           run_install: false
 
       - name: Test published 🔩

@@ -6,7 +6,7 @@ export interface Encoder<T> {
 }
 
 export interface Decoder<T> {
-  (value: Buffer): Promise<T> | T;
+  (value: Buffer | string | null): Promise<T> | T;
 }
 
 export interface Formatter<T> {
@@ -18,21 +18,30 @@ export type Format = 'json' | 'js' | 'raw' | string;
 
 export const json: Formatter<any> = {
   encode: (value: string) => JSON.stringify(value),
-  decode: (value: Buffer) => JSON.parse(value.toString()),
+  decode: (value: Buffer | string | null) => {
+    if (value === null) return null;
+    const str = typeof value === 'string' ? value : value.toString();
+    return JSON.parse(str);
+  },
 };
 
 export const js: Formatter<any> = {
   encode: (value: string) => JSON.stringify(value, null, '  '),
-  decode: (value: Buffer) => {
+  decode: (value: Buffer | string | null) => {
+    if (value === null) return null;
+    const str = typeof value === 'string' ? value : value.toString();
     const m = { exports: {} };
-    runInNewContext(value.toString(), { module: m });
+    runInNewContext(str, { module: m });
     return m.exports;
   },
 };
 
 export const raw: Formatter<any> = {
   encode: (value: any) => value,
-  decode: (value: Buffer) => value.toString('utf8'),
+  decode: (value: Buffer | string | null) => {
+    if (value === null) return null;
+    return typeof value === 'string' ? value : value.toString('utf8');
+  },
 };
 
 export function getFormatter<T>(format: Format): Formatter<T> {
