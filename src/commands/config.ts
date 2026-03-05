@@ -1,16 +1,21 @@
-import { createAdmin, createClient, getSASL, CLISASLOptions, resourceTypeToNumber } from '../utils/kafka';
+import { Admin } from '@platformatic/kafka';
+import { getClientConfigFromOpts, resourceTypeToNumber, type CommandContext, type ConfigResourceType } from '../utils/kafka.js';
 
-export default async function config(opts: any, { parent }: any) {
-  const { resource, resourceName, brokers, logLevel, ssl, pretty, ...rest } = { ...parent.opts(), ...opts } as any;
-  const sasl = getSASL(rest as CLISASLOptions);
-  const client = createClient(brokers, ssl, sasl, logLevel);
-  const admin = await createAdmin(client);
+interface ConfigOptions {
+  resource: ConfigResourceType;
+  resourceName: string;
+}
+
+export default async function config(opts: ConfigOptions, { parent }: CommandContext) {
+  const globalOpts = parent.opts();
+  const config = getClientConfigFromOpts(globalOpts);
+  const admin = new Admin(config);
   try {
-    const resourceType = resourceTypeToNumber(resource);
+    const resourceType = resourceTypeToNumber(opts.resource);
     const results = await admin.describeConfigs({
-      resources: [{ resourceType, resourceName }],
+      resources: [{ resourceType, resourceName: opts.resourceName }],
     });
-    const space = pretty ? 2 : 0;
+    const space = globalOpts.pretty ? 2 : 0;
     console.log(JSON.stringify(results, null, space));
   } finally {
     await admin.close();

@@ -1,15 +1,69 @@
-import { createClient, createCluster, getSASL, CLISASLOptions } from '../utils/kafka';
+import { Admin } from '@platformatic/kafka';
+import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.js';
 
-export default async function metadata(opts: any, { parent }: any) {
-  const { brokers, logLevel, ssl, pretty, ...rest } = { ...parent.opts(), ...opts } as any;
-  const sasl = getSASL(rest as CLISASLOptions);
-  const client = createClient(brokers, ssl, sasl, logLevel);
-  const cluster = await createCluster(client);
+export default async function metadata(_opts: object, { parent }: CommandContext) {
+  const globalOpts = parent.opts();
+  const config = getClientConfigFromOpts(globalOpts);
+  const admin = new Admin(config);
   try {
-    const metadata = await cluster.metadata();
-    const space = pretty ? 2 : 0;
-    console.log(JSON.stringify(metadata, null, space));
+    const topics = await admin.listTopics({ includeInternals: true });
+    const meta = await admin.metadata({ topics });
+
+    const brokerList: { nodeId: number; host: string; port: number; rack: null }[] = [];
+    for (const [nodeId, broker] of meta.brokers) {
+      brokerList.push({ nodeId, host: broker.host, port: broker.port, rack: null });
+    }
+
+    const topicMetadata: {
+      topicErrorCode: number;
+      topic: string;
+      isInternal: boolean;
+      partitionMetadata: {
+        partitionErrorCode: number;
+        partitionId: number;
+        leader: number;
+        replicas: number[];
+        isr: number[];
+      }[];
+    }[] = [];
+    for (const [topicName, topicMeta] of meta.topics) {
+      if (!topicMeta) continue;
+      const partitionMetadata: {
+        partitionErrorCode: number;
+        partitionId: number;
+        leader: number;
+        replicas: number[];
+        isr: number[];
+      }[] = [];
+      for (let partitionId = 0; partitionId < topicMeta.partitions.length; partitionId++) {
+        const partition = topicMeta.partitions[partitionId];
+        partitionMetadata.push({
+          partitionErrorCode: 0,
+          partitionId,
+          leader: partition.leader,
+          replicas: partition.replicas,
+          isr: [],
+        });
+      }
+      topicMetadata.push({
+        topicErrorCode: 0,
+        topic: topicName,
+        isInternal: topicName.startsWith('__'),
+        partitionMetadata,
+      });
+    }
+
+    const result = {
+      throttleTime: 0,
+      brokers: brokerList,
+      clusterId: meta.id,
+      controllerId: brokerList[0]?.nodeId ?? 0,
+      topicMetadata,
+    };
+
+    const space = globalOpts.pretty ? 2 : 0;
+    console.log(JSON.stringify(result, null, space));
   } finally {
-    await cluster.disconnect();
+    await admin.close();
   }
 }

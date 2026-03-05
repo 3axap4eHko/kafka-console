@@ -1,13 +1,17 @@
-import { createAdmin, createClient, getSASL, CLISASLOptions } from '../utils/kafka';
+import { Admin } from '@platformatic/kafka';
+import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.js';
 
-export default async function list(opts: any, { parent }: any) {
-  const { all, brokers, logLevel, ssl, pretty, ...rest } = { ...parent.opts(), ...opts } as any;
-  const sasl = getSASL(rest as CLISASLOptions);
-  const client = createClient(brokers, ssl, sasl, logLevel);
-  const admin = await createAdmin(client);
+interface ListOptions {
+  all?: boolean;
+}
+
+export default async function list(opts: ListOptions, { parent }: CommandContext) {
+  const globalOpts = parent.opts();
+  const config = getClientConfigFromOpts(globalOpts);
+  const admin = new Admin(config);
   try {
-    const topics = await admin.listTopics({ includeInternals: all });
-    const space = pretty ? 2 : 0;
+    const topics = await admin.listTopics({ includeInternals: opts.all });
+    const space = globalOpts.pretty ? 2 : 0;
     console.log(JSON.stringify(topics, null, space));
   } finally {
     await admin.close();

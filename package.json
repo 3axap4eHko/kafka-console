@@ -3,6 +3,7 @@
   "version": "2.1.50",
   "description": "Kafka CLI tool",
   "main": "index.js",
+  "type": "module",
   "bin": {
     "kcli": "build/cli.js",
     "kafka-console": "build/cli.js"
@@ -12,6 +13,7 @@
     "test": "vitest run",
     "test:cov": "COVERAGE=1 vitest run",
     "test:e2e": "vitest run --config vitest.config.e2e.ts",
+    "lint": "eslint .",
     "kcli": "node src/index.ts"
   },
   "repository": {
@@ -33,18 +35,21 @@
   },
   "homepage": "https://github.com/3axap4eHko/kafka-console#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/debug": "^4.1.12",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.3.3",
     "@vitest/coverage-v8": "^4.0.18",
     "dotenv": "^17.3.1",
+    "eslint": "^10.0.2",
+    "eslint-plugin-prettier": "^5.5.5",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1",
     "vitest": "^4.0.18"
   },
   "dependencies": {
     "@platformatic/kafka": "^1.29.0",
-    "commander": "^14.0.3",
-    "evnty": "^5.1.1"
+    "commander": "^14.0.3"
   },
   "packageManager": "pnpm@10.30.3+sha512.c961d1e0a2d8e354ecaa5166b822516668b7f44cb5bd95122d590dd81922f606f5473b6d23ec4a5be05e7fcd18e8488d47d978bbe981872f1145d06e9a740017"
 }

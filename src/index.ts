@@ -1,24 +1,23 @@
 import { Command } from 'commander';
-import {
-  resourceParser,
-} from './utils/kafka';
+import { resourceParser } from './utils/kafka.js';
 
-import consumeCommand from './commands/consume';
-import produceCommand from './commands/produce';
-import metadataCommand from './commands/metadata';
-import listCommand from './commands/list';
-import configCommand from './commands/config';
-import createTopicCommand from './commands/createTopic';
-import deleteTopicCommand from './commands/deleteTopic';
-import fetchTopicOffsets from './commands/fetchTopicOffsets';
+import consumeCommand from './commands/consume.js';
+import produceCommand from './commands/produce.js';
+import metadataCommand from './commands/metadata.js';
+import listCommand from './commands/list.js';
+import configCommand from './commands/config.js';
+import createTopicCommand from './commands/createTopic.js';
+import deleteTopicCommand from './commands/deleteTopic.js';
+import fetchTopicOffsets from './commands/fetchTopicOffsets.js';
 
-const { version } = require('../package.json');
+import { createRequire } from 'node:module';
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
 
-export function collect(value: any, result: any[]) {
-  return result.concat([value]);
+export function collect(value: string, previous: string[]) {
+  return previous.concat([value]);
 }
 
-export function toInt(value: any, result?: any) {
+export function toInt(value: string) {
   return parseInt(value, 10);
 }
 
@@ -51,7 +50,6 @@ commander
   .description('Consume kafka topic events')
   .action(consumeCommand);
 
-
 commander
   .command('produce <topic>')
   .option('-d, --data-format <data-format>', 'messages data-format: json, js, raw', 'json')
@@ -61,17 +59,9 @@ commander
   .description('Produce kafka topic events')
   .action(produceCommand);
 
-commander
-  .command('metadata')
-  .description('Displays kafka server metadata')
-  .action(metadataCommand);
+commander.command('metadata').description('Displays kafka server metadata').action(metadataCommand);
 
-commander
-  .command('list')
-  .alias('ls')
-  .option('-a, --all', 'include internal topics')
-  .description('Lists kafka topics')
-  .action(listCommand);
+commander.command('list').alias('ls').option('-a, --all', 'include internal topics').description('Lists kafka topics').action(listCommand);
 
 commander
   .command('config')
@@ -80,22 +70,15 @@ commander
   .description('Describes config for specific resource')
   .action(configCommand);
 
-commander
-  .command('topic:create <topic>')
-  .description('Creates kafka topic')
-  .action(createTopicCommand);
+commander.command('topic:create <topic>').description('Creates kafka topic').action(createTopicCommand);
 
-commander
-  .command('topic:delete <topic>')
-  .description('Deletes kafka topic')
-  .action(deleteTopicCommand);
+commander.command('topic:delete <topic>').description('Deletes kafka topic').action(deleteTopicCommand);
 
 commander
   .command('topic:offsets <topic> [timestamp]')
   .description('Shows kafka topic offsets')
   .option('-g, --group <group>', 'consumer group name')
   .action(fetchTopicOffsets);
-
 
 commander.on('--help', function () {
   [
@@ -114,14 +97,12 @@ commander.on('--help', function () {
     '  Preparing producer payload json data with jq',
     '  $ cat payload.json|jq -r -c .[]|npx kafka-console produce $KAFKA_TOPIC -f ./formatter/avro.js',
     '',
-  ].forEach(msg => console.log(msg));
+  ].forEach((msg) => console.log(msg));
 });
 
-commander
-  .parseAsync(process.argv)
-  .catch(e => {
-    console.error(e.message);
-    process.exit(1);
-  });
+commander.parseAsync(process.argv).catch((e: Error) => {
+  console.error(e.message);
+  process.exit(1);
+});
 
 export default commander;

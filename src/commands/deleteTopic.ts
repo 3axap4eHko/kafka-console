@@ -1,10 +1,9 @@
-import { createAdmin, createClient, getSASL, CLISASLOptions } from '../utils/kafka';
+import { Admin } from '@platformatic/kafka';
+import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.js';
 
-export default async function deleteTopic(topic: string, opts: any, { parent }: any) {
-  const { brokers, logLevel, ssl, ...rest }  = { ...parent.opts(), ...opts } as any;
-  const sasl = getSASL(rest as CLISASLOptions);
-  const client = createClient(brokers, ssl, sasl, logLevel);
-  const admin = await createAdmin(client);
+export default async function deleteTopic(topic: string, _opts: object, { parent }: CommandContext) {
+  const config = getClientConfigFromOpts(parent.opts());
+  const admin = new Admin(config);
   try {
     await admin.deleteTopics({
       topics: [topic],
