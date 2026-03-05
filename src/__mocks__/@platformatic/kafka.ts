@@ -13,14 +13,13 @@ export const {
   stringSerializers,
 } = actual;
 
-const Admin = vi.fn().mockImplementation(() => ({
+export const Admin = vi.fn().mockImplementation(() => ({
   metadata: vi.fn().mockResolvedValue({ brokers: new Map(), topics: new Map(), id: 'test' }),
+  listTopics: vi.fn().mockResolvedValue([]),
   createTopics: vi.fn().mockResolvedValue([]),
   deleteTopics: vi.fn().mockResolvedValue(undefined),
   close: vi.fn().mockResolvedValue(undefined),
 }));
-
-export const adminClient = { Admin };
 
 export const Consumer = vi.fn().mockImplementation(() => ({
   consume: vi.fn().mockResolvedValue({

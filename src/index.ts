@@ -18,7 +18,7 @@ export function collect(value: any, result: any[]) {
   return result.concat([value]);
 }
 
-export function toInt(value: any, result: any) {
+export function toInt(value: any, result?: any) {
   return parseInt(value, 10);
 }
 
@@ -27,7 +27,7 @@ const commander = new Command();
 commander
   .option('-b, --brokers <brokers>', 'bootstrap server host', process.env.KAFKA_BROKERS || 'localhost:9092')
   .option('-l, --log-level <logLevel>', 'log level')
-  .option('-t, --timeout <timeout>', 'set a timeout of operation', toInt, process.env.KAFKA_TIMEOUT || '0')
+  .option('-t, --timeout <timeout>', 'set a timeout of operation', toInt, toInt(process.env.KAFKA_TIMEOUT || '0'))
   .option('-p, --pretty', 'pretty print', false)
   .option('--ssl', 'enable ssl', false)
   .option('--mechanism <mechanism>', 'sasl mechanism', process.env.KAFKA_MECHANISM)

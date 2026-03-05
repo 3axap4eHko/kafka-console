@@ -1,5 +1,5 @@
 import {
-  adminClient,
+  Admin,
   ConfigResourceTypes,
   Consumer,
   Producer,
@@ -8,8 +8,6 @@ import {
   MessagesStreamModes,
   ListOffsetTimestamps,
 } from '@platformatic/kafka';
-
-const { Admin } = adminClient;
 import type { ConnectionOptions } from 'node:tls';
 import Pool, { PoolOptions } from './pool';
 
@@ -206,7 +204,8 @@ export async function createCluster(client: ClientOptions): Promise<{ metadata: 
   const admin = await createAdmin(client);
   return {
     async metadata(): Promise<Metadata> {
-      const meta = await admin.metadata({ topics: [] });
+      const topics = await admin.listTopics({ includeInternals: true });
+      const meta = await admin.metadata({ topics });
       const brokers: BrokerMetadata[] = [];
       for (const [nodeId, broker] of meta.brokers) {
         brokers.push({ nodeId, host: broker.host, port: broker.port, rack: null });
@@ -310,7 +309,10 @@ export async function createConsumer(client: ClientOptions, group: string, topic
         high: highWatermarks[message.partition] ?? message.offset,
       });
     }
-  })().catch(e => console.error(e));
+  })().catch(e => {
+    console.error(e);
+    pool.done();
+  });
 
   pool.onDone(async () => {
     await stream.close();
@@ -343,7 +345,10 @@ export async function createProducer(client: ClientOptions, topic: string) {
         }],
       });
     }
-  })().catch(e => console.error(e));
+  })().catch(e => {
+    console.error(e);
+    process.exitCode = 1;
+  });
 
   return pool;
 }
@@ -356,27 +361,29 @@ export async function fetchTopicOffsets(client: ClientOptions, topic: string): P
     deserializers: stringDeserializers,
   });
 
-  const [earliestMap, latestMap] = await Promise.all([
-    consumer.listOffsets({ topics: [topic], timestamp: ListOffsetTimestamps.EARLIEST }),
-    consumer.listOffsets({ topics: [topic], timestamp: ListOffsetTimestamps.LATEST }),
-  ]);
+  try {
+    const [earliestMap, latestMap] = await Promise.all([
+      consumer.listOffsets({ topics: [topic], timestamp: ListOffsetTimestamps.EARLIEST }),
+      consumer.listOffsets({ topics: [topic], timestamp: ListOffsetTimestamps.LATEST }),
+    ]);
 
-  await consumer.close();
+    const earliest = earliestMap.get(topic) || [];
+    const latest = latestMap.get(topic) || [];
 
-  const earliest = earliestMap.get(topic) || [];
-  const latest = latestMap.get(topic) || [];
+    const result: { partition: number; offset: string; high: string; low: string }[] = [];
+    for (let partition = 0; partition < latest.length; partition++) {
+      result.push({
+        partition,
+        offset: latest[partition].toString(),
+        high: latest[partition].toString(),
+        low: (earliest[partition] || BigInt(0)).toString(),
+      });
+    }
 
-  const result: { partition: number; offset: string; high: string; low: string }[] = [];
-  for (let partition = 0; partition < latest.length; partition++) {
-    result.push({
-      partition,
-      offset: latest[partition].toString(),
-      high: latest[partition].toString(),
-      low: (earliest[partition] || BigInt(0)).toString(),
-    });
+    return result;
+  } finally {
+    await consumer.close();
   }
-
-  return result;
 }
 
 export async function fetchTopicOffsetsByTimestamp(client: ClientOptions, topic: string, timestamp: number): Promise<{ partition: number; offset: string }[]> {
@@ -387,19 +394,26 @@ export async function fetchTopicOffsetsByTimestamp(client: ClientOptions, topic:
     deserializers: stringDeserializers,
   });
 
-  const offsetsMap = await consumer.listOffsets({ topics: [topic], timestamp: BigInt(timestamp) });
-  await consumer.close();
+  try {
+    const offsetsMap = await consumer.listOffsets({ topics: [topic], timestamp: BigInt(timestamp) });
 
-  const offsets = offsetsMap.get(topic) || [];
-  return offsets.map((offset, partition) => ({ partition, offset: offset.toString() }));
+    const offsets = offsetsMap.get(topic) || [];
+    return offsets.map((offset, partition) => ({ partition, offset: offset.toString() }));
+  } finally {
+    await consumer.close();
+  }
 }
 
 export async function fetchConsumerGroupOffsets(client: ClientOptions, groupId: string, topics: string[]): Promise<{ topic: string; partitions: { partition: number; offset: string }[] }[]> {
   const config = getClientConfig(client.brokers, client.ssl, client.sasl);
 
   const admin = new Admin(config);
-  const meta = await admin.metadata({ topics });
-  await admin.close();
+  let meta;
+  try {
+    meta = await admin.metadata({ topics });
+  } finally {
+    await admin.close();
+  }
 
   const topicAssignments: { topic: string; partitions: number[] }[] = [];
   for (const topic of topics) {
@@ -417,17 +431,20 @@ export async function fetchConsumerGroupOffsets(client: ClientOptions, groupId: 
     deserializers: stringDeserializers,
   });
 
-  const offsetsMap = await consumer.listCommittedOffsets({ topics: topicAssignments });
-  await consumer.close();
+  try {
+    const offsetsMap = await consumer.listCommittedOffsets({ topics: topicAssignments });
 
-  const result: { topic: string; partitions: { partition: number; offset: string }[] }[] = [];
-  for (const topic of topics) {
-    const offsets = offsetsMap.get(topic) || [];
-    result.push({
-      topic,
-      partitions: offsets.map((offset: bigint, partition: number) => ({ partition, offset: offset.toString() })),
-    });
+    const result: { topic: string; partitions: { partition: number; offset: string }[] }[] = [];
+    for (const topic of topics) {
+      const offsets = offsetsMap.get(topic) || [];
+      result.push({
+        topic,
+        partitions: offsets.map((offset: bigint, partition: number) => ({ partition, offset: offset.toString() })),
+      });
+    }
+
+    return result;
+  } finally {
+    await consumer.close();
   }
-
-  return result;
 }

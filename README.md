@@ -414,7 +414,6 @@ SyntaxError: Unexpected token...
 ## License
 
 License [The MIT License](http://opensource.org/licenses/MIT)
-Copyright (c) 2024 Ivan Zakharchanka
 
 [npm-url]: https://www.npmjs.com/package/kafka-console
 [downloads-image]: https://img.shields.io/npm/dw/kafka-console.svg?maxAge=43200
