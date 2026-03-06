@@ -1,5 +1,6 @@
 import { Admin } from '@platformatic/kafka';
 import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.js';
+import { writeJsonlMany } from '../utils/output.js';
 
 interface CreateTopicOptions {
   partitions?: number;
@@ -7,8 +8,7 @@ interface CreateTopicOptions {
 }
 
 export default async function createTopic(topic: string, opts: CreateTopicOptions, { parent }: CommandContext) {
-  const globalOpts = parent.opts();
-  const config = getClientConfigFromOpts(globalOpts);
+  const config = getClientConfigFromOpts(parent.opts());
   const admin = new Admin(config);
   try {
     const topics = await admin.createTopics({
@@ -16,8 +16,7 @@ export default async function createTopic(topic: string, opts: CreateTopicOption
       partitions: opts.partitions ?? 1,
       replicas: opts.replicas ?? 1,
     });
-    const space = globalOpts.pretty ? 2 : 0;
-    console.log(JSON.stringify(topics, null, space));
+    writeJsonlMany(topics);
   } finally {
     await admin.close();
   }

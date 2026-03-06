@@ -1,13 +1,12 @@
 import { getClientConfigFromOpts, fetchTopicOffsets, fetchTopicOffsetsByTimestamp, fetchConsumerGroupOffsets, type CommandContext } from '../utils/kafka.js';
+import { writeJsonlMany } from '../utils/output.js';
 
 interface FetchTopicOffsetsOptions {
   group?: string;
 }
 
 export default async function fetchTopicOffset(topic: string, timestamp: string | undefined, opts: FetchTopicOffsetsOptions, { parent }: CommandContext) {
-  const globalOpts = parent.opts();
-  const config = getClientConfigFromOpts(globalOpts);
-  const space = globalOpts.pretty ? 2 : 0;
+  const config = getClientConfigFromOpts(parent.opts());
 
   if (timestamp) {
     const unixTimestamp = /^\d+$/.test(timestamp) ? parseInt(timestamp, 10) : new Date(timestamp).getTime();
@@ -15,12 +14,12 @@ export default async function fetchTopicOffset(topic: string, timestamp: string 
       throw new Error(`Invalid timestamp "${timestamp}"`);
     }
     const topicOffsets = await fetchTopicOffsetsByTimestamp(config, topic, unixTimestamp);
-    console.log(JSON.stringify(topicOffsets, null, space));
+    writeJsonlMany(topicOffsets);
   } else if (opts.group) {
     const topicOffsets = await fetchConsumerGroupOffsets(config, opts.group, [topic]);
-    console.log(JSON.stringify(topicOffsets, null, space));
+    writeJsonlMany(topicOffsets);
   } else {
     const topicOffsets = await fetchTopicOffsets(config, topic);
-    console.log(JSON.stringify(topicOffsets, null, space));
+    writeJsonlMany(topicOffsets);
   }
 }

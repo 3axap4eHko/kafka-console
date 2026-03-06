@@ -1,9 +1,9 @@
 import { Admin } from '@platformatic/kafka';
 import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.js';
+import { writeJsonlMany } from '../utils/output.js';
 
 export default async function metadata(_opts: object, { parent }: CommandContext) {
-  const globalOpts = parent.opts();
-  const config = getClientConfigFromOpts(globalOpts);
+  const config = getClientConfigFromOpts(parent.opts());
   const admin = new Admin(config);
   try {
     const topics = await admin.listTopics({ includeInternals: true });
@@ -61,8 +61,7 @@ export default async function metadata(_opts: object, { parent }: CommandContext
       topicMetadata,
     };
 
-    const space = globalOpts.pretty ? 2 : 0;
-    console.log(JSON.stringify(result, null, space));
+    writeJsonlMany(result);
   } finally {
     await admin.close();
   }

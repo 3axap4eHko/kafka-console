@@ -25,6 +25,11 @@ function cliWithInput(args: string, input: string): string {
   }).trim();
 }
 
+function parseJsonl<T = unknown>(output: string): T[] {
+  if (!output) return [];
+  return output.split('\n').map((line) => JSON.parse(line) as T);
+}
+
 function cliExpectFail(args: string): { stdout: string; stderr: string } {
   try {
     const stdout = cli(args);
@@ -56,7 +61,7 @@ describe('CLI e2e tests', () => {
   describe('metadata', () => {
     it('should return cluster metadata', () => {
       const output = cli('metadata');
-      const metadata = JSON.parse(output);
+      const [metadata] = parseJsonl<Record<string, unknown>>(output);
 
       expect(metadata).toHaveProperty('brokers');
       expect(metadata).toHaveProperty('clusterId');
@@ -67,10 +72,9 @@ describe('CLI e2e tests', () => {
       expect(metadata.brokers[0]).toHaveProperty('port');
     });
 
-    it('should pretty print metadata', () => {
+    it('should keep metadata as single-line JSON with -p', () => {
       const output = cli('metadata -p');
-      expect(output).toContain('\n');
-      const metadata = JSON.parse(output);
+      const [metadata] = parseJsonl<Record<string, unknown>>(output);
       expect(metadata).toHaveProperty('brokers');
     });
   });
@@ -78,9 +82,8 @@ describe('CLI e2e tests', () => {
   describe('topic:create', () => {
     it('should create a topic', () => {
       const output = cli(`topic:create ${TEST_TOPIC}`);
-      const topics = JSON.parse(output);
+      const topics = parseJsonl<Record<string, unknown>>(output);
 
-      expect(Array.isArray(topics)).toBe(true);
       expect(topics.length).toBe(1);
       expect(topics[0]).toHaveProperty('name', TEST_TOPIC);
       expect(topics[0]).toHaveProperty('partitions');
@@ -91,28 +94,25 @@ describe('CLI e2e tests', () => {
   describe('list', () => {
     it('should list topics including the created one', () => {
       const output = cli('list');
-      const topics = JSON.parse(output);
-
-      expect(Array.isArray(topics)).toBe(true);
+      const topics = parseJsonl<string>(output);
       expect(topics).toContain(TEST_TOPIC);
     });
 
     it('should list topics with ls alias', () => {
       const output = cli('ls');
-      const topics = JSON.parse(output);
+      const topics = parseJsonl<string>(output);
       expect(topics).toContain(TEST_TOPIC);
     });
 
     it('should list topics with --all flag including internals', () => {
       const output = cli('list --all');
-      const topics = JSON.parse(output) as string[];
+      const topics = parseJsonl<string>(output);
       expect(topics).toContain(TEST_TOPIC);
     });
 
-    it('should pretty print topic list', () => {
+    it('should keep topic list as JSONL with -p', () => {
       const output = cli('list -p');
-      expect(output).toContain('\n');
-      const topics = JSON.parse(output);
+      const topics = parseJsonl<string>(output);
       expect(topics).toContain(TEST_TOPIC);
     });
   });
@@ -120,17 +120,13 @@ describe('CLI e2e tests', () => {
   describe('config', () => {
     it('should describe topic config', () => {
       const output = cli(`config -r topic -n ${TEST_TOPIC}`);
-      const configs = JSON.parse(output);
-
-      expect(Array.isArray(configs)).toBe(true);
+      const configs = parseJsonl<Record<string, unknown>>(output);
       expect(configs.length).toBeGreaterThan(0);
     });
 
     it('should describe broker config', () => {
       const output = cli('config -r broker -n 1');
-      const configs = JSON.parse(output);
-
-      expect(Array.isArray(configs)).toBe(true);
+      const configs = parseJsonl<Record<string, unknown>>(output);
       expect(configs.length).toBeGreaterThan(0);
     });
   });
@@ -213,11 +209,10 @@ describe('CLI e2e tests', () => {
       expect(messages[0]).toHaveProperty('value');
     });
 
-    it('should pretty print consumed messages', () => {
+    it('should keep consume output as JSONL with -p', () => {
       const group = `${TEST_GROUP}-pretty`;
       const output = cli(`consume ${TEST_TOPIC} -g ${group} --from 0 --count 1 -t 10000 -p`);
-      expect(output).toContain('\n');
-      const message = JSON.parse(output);
+      const [message] = parseJsonl<Record<string, unknown>>(output);
       expect(message).toHaveProperty('key', 'test-key');
     });
 
@@ -272,9 +267,8 @@ describe('CLI e2e tests', () => {
   describe('topic:offsets', () => {
     it('should return topic offsets (high/low)', () => {
       const output = cli(`topic:offsets ${TEST_TOPIC}`);
-      const offsets = JSON.parse(output);
+      const offsets = parseJsonl<Record<string, unknown>>(output);
 
-      expect(Array.isArray(offsets)).toBe(true);
       expect(offsets.length).toBeGreaterThan(0);
       expect(offsets[0]).toHaveProperty('partition');
       expect(offsets[0]).toHaveProperty('offset');
@@ -285,9 +279,8 @@ describe('CLI e2e tests', () => {
 
     it('should return consumer group offsets', () => {
       const output = cli(`topic:offsets ${TEST_TOPIC} -g ${TEST_GROUP}-from0`);
-      const offsets = JSON.parse(output);
+      const offsets = parseJsonl<Record<string, unknown>>(output);
 
-      expect(Array.isArray(offsets)).toBe(true);
       expect(offsets.length).toBe(1);
       expect(offsets[0]).toHaveProperty('topic', TEST_TOPIC);
       expect(offsets[0]).toHaveProperty('partitions');
@@ -297,9 +290,8 @@ describe('CLI e2e tests', () => {
     it('should return offsets by timestamp', () => {
       const timestamp = new Date(Date.now() - 60000).toISOString();
       const output = cli(`topic:offsets ${TEST_TOPIC} "${timestamp}"`);
-      const offsets = JSON.parse(output);
+      const offsets = parseJsonl<Record<string, unknown>>(output);
 
-      expect(Array.isArray(offsets)).toBe(true);
       expect(offsets.length).toBeGreaterThan(0);
       expect(offsets[0]).toHaveProperty('partition');
       expect(offsets[0]).toHaveProperty('offset');
@@ -313,7 +305,7 @@ describe('CLI e2e tests', () => {
       cli(`topic:delete ${TEST_TOPIC}`);
 
       const output = cli('list');
-      const topics = JSON.parse(output);
+      const topics = parseJsonl<string>(output);
       expect(topics).not.toContain(TEST_TOPIC);
     });
   });

@@ -90,8 +90,7 @@ export default async function consume(topic: string, opts: ConsumeOptions, { par
           value: await formatter.decode(message.value),
           ahead,
         };
-        const space = globalOpts.pretty ? 2 : 0;
-        output.write(JSON.stringify(msg, null, space) + '\n');
+        output.write(JSON.stringify(msg) + '\n');
       }
       if (++index >= limit) break;
     }
