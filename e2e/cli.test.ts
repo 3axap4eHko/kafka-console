@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -71,12 +71,6 @@ describe('CLI e2e tests', () => {
       expect(metadata.brokers[0]).toHaveProperty('host');
       expect(metadata.brokers[0]).toHaveProperty('port');
     });
-
-    it('should keep metadata as single-line JSON with -p', () => {
-      const output = cli('metadata -p');
-      const [metadata] = parseJsonl<Record<string, unknown>>(output);
-      expect(metadata).toHaveProperty('brokers');
-    });
   });
 
   describe('topic:create', () => {
@@ -106,12 +100,6 @@ describe('CLI e2e tests', () => {
 
     it('should list topics with --all flag including internals', () => {
       const output = cli('list --all');
-      const topics = parseJsonl<string>(output);
-      expect(topics).toContain(TEST_TOPIC);
-    });
-
-    it('should keep topic list as JSONL with -p', () => {
-      const output = cli('list -p');
       const topics = parseJsonl<string>(output);
       expect(topics).toContain(TEST_TOPIC);
     });
@@ -146,7 +134,7 @@ describe('CLI e2e tests', () => {
 
     it('should produce with static headers', () => {
       const message = JSON.stringify({ key: 'header-key', value: 'header-value' });
-      cliWithInput(`produce ${TEST_TOPIC} -h x-source:test -h x-env:e2e`, message);
+      cliWithInput(`produce ${TEST_TOPIC} -H x-source:test -H x-env:e2e`, message);
     });
 
     it('should produce from input file', () => {
@@ -209,13 +197,6 @@ describe('CLI e2e tests', () => {
       expect(messages[0]).toHaveProperty('value');
     });
 
-    it('should keep consume output as JSONL with -p', () => {
-      const group = `${TEST_GROUP}-pretty`;
-      const output = cli(`consume ${TEST_TOPIC} -g ${group} --from 0 --count 1 -t 10000 -p`);
-      const [message] = parseJsonl<Record<string, unknown>>(output);
-      expect(message).toHaveProperty('key', 'test-key');
-    });
-
     it('should write output to file', () => {
       const outPath = join(TMP_DIR, 'consume-output.json');
       const group = `${TEST_GROUP}-file`;
@@ -261,6 +242,38 @@ describe('CLI e2e tests', () => {
       const group = `${TEST_GROUP}-timeout`;
       const result = cliExpectFail(`consume ${TEST_TOPIC} -g ${group} -t 2000`);
       expect(result.stderr).toContain('TIMEOUT');
+    });
+
+    it('should exit cleanly on SIGINT without timeout', async () => {
+      const group = `${TEST_GROUP}-sigint`;
+      const child = spawn('node', ['build/cli.js', 'consume', TEST_TOPIC, '-g', group, '-b', BROKERS], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+
+      const stdoutChunks: Buffer[] = [];
+      const stderrChunks: Buffer[] = [];
+      child.stdout.on('data', (chunk: Buffer) => stdoutChunks.push(chunk));
+      child.stderr.on('data', (chunk: Buffer) => stderrChunks.push(chunk));
+
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      cliWithInput(`produce ${TEST_TOPIC}`, JSON.stringify({ key: 'sigint-key', value: 'sigint-value' }));
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('consume did not receive a message before SIGINT')), 3000);
+        child.stdout.once('data', () => {
+          clearTimeout(timer);
+          resolve();
+        });
+      });
+      child.kill('SIGINT');
+
+      const result = await new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((resolve) => {
+        child.once('exit', (code, signal) => resolve({ code, signal }));
+      });
+
+      expect(result.signal).toBeNull();
+      expect(result.code).toBe(0);
+      expect(Buffer.concat(stdoutChunks).toString()).toContain('"key":"sigint-key"');
+      expect(Buffer.concat(stderrChunks).toString()).not.toContain('TIMEOUT');
     });
   });
 

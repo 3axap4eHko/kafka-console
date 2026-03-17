@@ -25,8 +25,8 @@ A powerful and easy-to-use command-line interface for Apache Kafka operations.
 ## Features
 
 - ✅ **Consumer & Producer** - Full support for consuming and producing messages
-- ✅ **Multiple Authentication Methods** - Plain, SCRAM-SHA-256/512, AWS IAM, OAuth Bearer
-- ✅ **Flexible Message Formats** - JSON, JavaScript, raw text, or custom formatters
+- ✅ **Multiple Authentication Methods** - Plain, SCRAM-SHA-256/512, OAuth Bearer
+- ✅ **Flexible Message Formats** - JSON, raw text, or custom formatters
 - ✅ **Consumer Groups** - Full consumer group support with offset management
 - ✅ **Time-based Consumption** - Read messages from specific timestamps
 - ✅ **SSL/TLS Support** - Secure connections to Kafka clusters
@@ -85,14 +85,13 @@ kafka-console consume <topic> [options]
 | `-c, --count <count>` | Number of messages to read | unlimited |
 | `-s, --skip <skip>` | Number of messages to skip | 0 |
 | `-o, --output <file>` | Write output to file | stdout |
-| `-d, --data-format <format>` | Message format (json/js/raw/custom) | json |
-| `-p, --pretty` | Pretty print JSON output | false |
+| `-d, --data-format <format>` | Message format (json/raw/custom) | json |
 
 #### Examples
 
-**Consume from beginning and pretty print:**
+**Consume from beginning:**
 ```bash
-kafka-console consume my-topic --from 0 --pretty
+kafka-console consume my-topic --from 0
 ```
 
 **Consume last 10 messages:**
@@ -130,8 +129,8 @@ kafka-console produce <topic> [options]
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-i, --input <file>` | Read input from file | stdin |
-| `-d, --data-format <format>` | Message format (json/js/raw/custom) | json |
-| `-h, --header <header>` | Add message header (format: key:value) | none |
+| `-d, --data-format <format>` | Message format (json/raw/custom) | json |
+| `-H, --header <header>` | Add message header (format: key:value) | none |
 | `-w, --wait <ms>` | Wait time between messages | 0 |
 
 #### Examples
@@ -214,6 +213,15 @@ kafka-console consume my-topic \
   --ssl
 ```
 
+TLS certificate verification is enabled by default when `--ssl` is set. Use `--insecure` only for development or trusted self-signed environments.
+
+```bash
+kafka-console consume my-topic \
+  --brokers broker1:9093 \
+  --ssl \
+  --insecure
+```
+
 ### SASL/PLAIN
 ```bash
 kafka-console consume my-topic \
@@ -232,17 +240,6 @@ kafka-console consume my-topic \
   --mechanism scram-sha-256 \
   --username myuser \
   --password mypassword
-```
-
-### AWS IAM
-```bash
-kafka-console consume my-topic \
-  --brokers broker:9093 \
-  --ssl \
-  --mechanism aws \
-  --access-key-id AKIAXXXXXXXX \
-  --secret-access-key XXXXXXXXXX \
-  --session-token XXXXXXXXXX
 ```
 
 ### OAuth Bearer
@@ -266,12 +263,6 @@ echo '{"name": "Alice", "age": 30}' | kafka-console produce my-topic
 Messages are sent as plain text:
 ```bash
 echo "Plain text message" | kafka-console produce my-topic --data-format raw
-```
-
-### JavaScript Format
-Messages can contain JavaScript exports:
-```bash
-echo 'module.exports = { timestamp: Date.now() }' | kafka-console produce my-topic --data-format js
 ```
 
 ### Custom Formatter
@@ -308,17 +299,13 @@ All supported environment variables:
 - `KAFKA_MECHANISM` - SASL mechanism
 - `KAFKA_USERNAME` - SASL username
 - `KAFKA_PASSWORD` - SASL password
-- `KAFKA_AUTH_ID` - AWS authorization identity
-- `KAFKA_ACCESS_KEY_ID` - AWS access key ID
-- `KAFKA_SECRET_ACCESS_KEY` - AWS secret access key
-- `KAFKA_SESSION_TOKEN` - AWS session token
 - `KAFKA_OAUTH_BEARER` - OAuth bearer token
 
 ## Common Use Cases
 
 ### Monitor Topic in Real-time
 ```bash
-kafka-console consume logs --group monitor-group --pretty
+kafka-console consume logs --group monitor-group
 ```
 
 ### Replay Messages from Yesterday
@@ -343,7 +330,7 @@ kafka-console consume my-topic --from 0 | wc -l
 
 ### Sample Messages
 ```bash
-kafka-console consume large-topic --count 100 --pretty
+kafka-console consume large-topic --count 100
 ```
 
 ### Debug Message Headers
@@ -410,6 +397,7 @@ SyntaxError: Unexpected token...
 - Ensure `--ssl` flag is used
 - Verify broker SSL port (usually 9093)
 - Check certificate validity
+- Use `--insecure` only when you intentionally want to skip certificate verification
 
 ## License
 

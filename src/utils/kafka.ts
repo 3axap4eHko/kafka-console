@@ -1,24 +1,6 @@
 import { Admin, ConfigResourceTypes, Consumer, stringDeserializers, ListOffsetTimestamps } from '@platformatic/kafka';
 import type { ConnectionOptions } from 'node:tls';
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug' | 'nothing';
-
-export function logLevelParser(level: string): LogLevel {
-  if (/error/.test(level)) {
-    return 'error';
-  }
-  if (/warn/.test(level)) {
-    return 'warn';
-  }
-  if (/info/.test(level)) {
-    return 'info';
-  }
-  if (/debug/.test(level)) {
-    return 'debug';
-  }
-  return 'nothing';
-}
-
 export type ConfigResourceType = 'UNKNOWN' | 'TOPIC' | 'BROKER' | 'BROKER_LOGGER';
 
 export function resourceParser(resource: string): ConfigResourceType {
@@ -46,17 +28,12 @@ export function resourceTypeToNumber(type: ConfigResourceType): (typeof ConfigRe
 
 export interface GlobalOptions {
   brokers: string;
-  logLevel?: string;
   timeout: number;
-  pretty: boolean;
   ssl: boolean;
+  insecure?: boolean;
   mechanism?: string;
   username?: string;
   password?: string;
-  authId?: string;
-  accessKeyId?: string;
-  secretAccessKey?: string;
-  sessionToken?: string;
   oauthBearer?: string;
 }
 
@@ -86,14 +63,12 @@ export function getSASL({
       return { mechanism: 'SCRAM-SHA-512', username, password };
     case 'oauthbearer':
       return { mechanism: 'OAUTHBEARER', token: oauthBearer };
-    case 'aws':
-      throw new Error('AWS SASL mechanism is not supported by @platformatic/kafka');
     default:
       return undefined;
   }
 }
 
-export function getClientConfig(bootstrapServer: string, ssl: boolean, sasl?: SASLConfig) {
+export function getClientConfig(bootstrapServer: string, ssl: boolean, sasl?: SASLConfig, insecure = false) {
   const config: {
     clientId: string;
     bootstrapBrokers: string[];
@@ -105,7 +80,7 @@ export function getClientConfig(bootstrapServer: string, ssl: boolean, sasl?: SA
   };
 
   if (ssl) {
-    config.tls = { rejectUnauthorized: false };
+    config.tls = { rejectUnauthorized: !insecure };
   }
 
   if (sasl) {
@@ -117,7 +92,7 @@ export function getClientConfig(bootstrapServer: string, ssl: boolean, sasl?: SA
 
 export function getClientConfigFromOpts(opts: GlobalOptions) {
   const sasl = getSASL(opts);
-  return getClientConfig(opts.brokers, opts.ssl, sasl);
+  return getClientConfig(opts.brokers, opts.ssl, sasl, opts.insecure);
 }
 
 export async function fetchTopicOffsets(

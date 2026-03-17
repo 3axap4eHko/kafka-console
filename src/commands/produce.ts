@@ -6,8 +6,25 @@ import { getFormatter } from '../utils/formatters.js';
 
 interface InputMessage {
   key?: string;
-  value: string;
+  value: unknown;
   headers?: Record<string, string>;
+}
+
+function toInputMessage(value: unknown): InputMessage | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || !('value' in value)) {
+    return null;
+  }
+
+  const message = value as InputMessage;
+  if (message.value === undefined) {
+    return null;
+  }
+
+  return {
+    key: message.key,
+    value: message.value,
+    headers: message.headers,
+  };
 }
 
 async function* readStdin(): AsyncGenerator<InputMessage> {
@@ -15,7 +32,12 @@ async function* readStdin(): AsyncGenerator<InputMessage> {
   for await (const line of rl) {
     if (!line.trim()) continue;
     try {
-      yield JSON.parse(line) as InputMessage;
+      const message = toInputMessage(JSON.parse(line) as unknown);
+      if (!message) {
+        console.error(`Invalid message payload: missing or undefined "value" field: ${line}`);
+        continue;
+      }
+      yield message;
     } catch {
       console.error(`Invalid JSON: ${line}`);
     }
@@ -24,8 +46,19 @@ async function* readStdin(): AsyncGenerator<InputMessage> {
 
 async function* readFile(filename: string): AsyncGenerator<InputMessage> {
   const content = await Fs.promises.readFile(filename, 'utf8');
-  const messages = JSON.parse(content) as InputMessage[];
-  for (const msg of messages) yield msg;
+  const parsed = JSON.parse(content) as unknown;
+  if (!Array.isArray(parsed)) {
+    throw new Error(`Input file "${filename}" must contain a JSON array`);
+  }
+
+  for (let index = 0; index < parsed.length; index++) {
+    const message = toInputMessage(parsed[index]);
+    if (!message) {
+      console.error(`Invalid message at index ${index}: missing or undefined "value" field`);
+      continue;
+    }
+    yield message;
+  }
 }
 
 interface ProduceOptions {

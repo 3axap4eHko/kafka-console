@@ -1,17 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { Command } from 'commander';
-import { collect } from '../index';
-
-const commander = new Command();
+import { collect, toInt } from '../index';
 
 describe('Cli test suite', () => {
   it('Should collect values', () => {
-    const result: number[] = [];
+    const result: string[] = [];
 
-    expect(collect(1, result)).toContain(1);
+    expect(collect('1', result)).toContain('1');
   });
 
-  it('Should call commander', () => {
-    expect(commander.parseAsync).toHaveBeenCalled();
+  it('Should parse integers', () => {
+    expect(toInt('42')).toBe(42);
   });
 });

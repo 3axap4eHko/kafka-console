@@ -25,24 +25,19 @@ const commander = new Command();
 
 commander
   .option('-b, --brokers <brokers>', 'bootstrap server host', process.env.KAFKA_BROKERS || 'localhost:9092')
-  .option('-l, --log-level <logLevel>', 'log level')
   .option('-t, --timeout <timeout>', 'set a timeout of operation', toInt, toInt(process.env.KAFKA_TIMEOUT || '0'))
-  .option('-p, --pretty', 'pretty print', false)
   .option('--ssl', 'enable ssl', false)
+  .option('--insecure', 'disable TLS certificate verification', false)
   .option('--mechanism <mechanism>', 'sasl mechanism', process.env.KAFKA_MECHANISM)
   .option('--username <username>', 'sasl username', process.env.KAFKA_USERNAME)
   .option('--password <password>', 'sasl password', process.env.KAFKA_PASSWORD)
-  .option('--auth-id <authId>', 'sasl aws authorization identity', process.env.KAFKA_AUTH_ID)
-  .option('--access-key-id <accessKeyId>', 'sasl aws access key id', process.env.KAFKA_ACCESS_KEY_ID)
-  .option('--secret-access-key <secretAccessKey>', 'sasl aws secret access key', process.env.KAFKA_SECRET_ACCESS_KEY)
-  .option('--session-token <seccionToken>', 'sasl aws session token', process.env.KAFKA_SESSION_TOKEN)
   .option('--oauth-bearer <oauthBearer>', 'sasl oauth bearer token', process.env.KAFKA_OAUTH_BEARER)
   .version(version);
 
 commander
   .command('consume <topic>')
-  .requiredOption('-g, --group <group>', 'consumer group name', `kafka-console-consumer-${Date.now()}`)
-  .option('-d, --data-format <data-format>', 'messages data-format: json, js, raw', 'json')
+  .option('-g, --group <group>', 'consumer group name', `kafka-console-consumer-${Date.now()}`)
+  .option('-d, --data-format <data-format>', 'messages data-format: json, raw, or custom module path', 'json')
   .option('-o, --output <filename>', 'write output to specified filename')
   .option('-f, --from <from>', 'read messages from the specific timestamp in milliseconds or ISO 8601 format. Set 0 to read from the beginning')
   .option('-c, --count <count>', 'a number of messages to read', toInt, Infinity)
@@ -52,10 +47,10 @@ commander
 
 commander
   .command('produce <topic>')
-  .option('-d, --data-format <data-format>', 'messages data-format: json, js, raw', 'json')
+  .option('-d, --data-format <data-format>', 'messages data-format: json, raw, or custom module path', 'json')
   .option('-i, --input <filename>', 'input filename')
   .option('-w, --wait <wait>', 'wait the time in ms after sending a message', toInt, 0)
-  .option('-h, --header <header>', 'set a static header', collect, [])
+  .option('-H, --header <header>', 'set a static header', collect, [])
   .description('Produce kafka topic events')
   .action(produceCommand);
 
@@ -89,13 +84,13 @@ commander.on('--help', function () {
     '  $ npx kafka-console -b $KAFKA_BROKERS consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD',
     '',
     '  Extracting consumer output with jq',
-    '  $ npx kafka-console consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP --f ./formatter/avro.js | jq .value',
+    '  $ npx kafka-console consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP -d ./formatter/avro.js | jq .value',
     '',
     '  General producer usage',
     '  $ npx kafka-console produce $KAFKA_TOPIC -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD',
     '',
     '  Preparing producer payload json data with jq',
-    '  $ cat payload.json|jq -r -c .[]|npx kafka-console produce $KAFKA_TOPIC -f ./formatter/avro.js',
+    '  $ cat payload.json|jq -r -c .[]|npx kafka-console produce $KAFKA_TOPIC -d ./formatter/avro.js',
     '',
   ].forEach((msg) => console.log(msg));
 });

@@ -42,7 +42,7 @@ export default async function metadata(_opts: object, { parent }: CommandContext
           partitionId,
           leader: partition.leader,
           replicas: partition.replicas,
-          isr: [],
+          isr: partition.isr,
         });
       }
       topicMetadata.push({
@@ -57,7 +57,7 @@ export default async function metadata(_opts: object, { parent }: CommandContext
       throttleTime: 0,
       brokers: brokerList,
       clusterId: meta.id,
-      controllerId: brokerList[0]?.nodeId ?? 0,
+      controllerId: meta.controllerId,
       topicMetadata,
     };
 

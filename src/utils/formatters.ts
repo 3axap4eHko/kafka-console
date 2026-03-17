@@ -1,6 +1,5 @@
 import Path from 'node:path';
 import { createRequire } from 'node:module';
-import { runInNewContext } from 'vm';
 
 export interface Encoder<T> {
   (value: T): Promise<string | Buffer> | string | Buffer;
@@ -15,25 +14,12 @@ export interface Formatter<T> {
   decode: Decoder<T>;
 }
 
-export type Format = string;
-
 export const json: Formatter<unknown> = {
   encode: (value: unknown) => JSON.stringify(value),
   decode: (value: Buffer | string | null) => {
     if (value === null) return null;
     const str = typeof value === 'string' ? value : value.toString();
     return JSON.parse(str) as unknown;
-  },
-};
-
-export const js: Formatter<unknown> = {
-  encode: (value: unknown) => JSON.stringify(value, null, '  '),
-  decode: (value: Buffer | string | null) => {
-    if (value === null) return null;
-    const str = typeof value === 'string' ? value : value.toString();
-    const m: { exports: unknown } = { exports: {} };
-    runInNewContext(str, { module: m });
-    return m.exports;
   },
 };
 
@@ -49,8 +35,6 @@ export function getFormatter(format: string): Formatter<unknown> {
   switch (format) {
     case 'json':
       return json;
-    case 'js':
-      return js;
     case 'raw':
       return raw;
     default: {
