@@ -2,7 +2,6 @@
   "name": "kafka-console",
   "version": "3.0.0-rc.3",
   "description": "Kafka CLI tool",
-  "main": "index.js",
   "type": "module",
   "bin": {
     "kcli": "build/cli.js",

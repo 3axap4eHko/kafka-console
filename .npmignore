@@ -1,7 +1,13 @@
 /.idea
 /.github
+/.claude
+/.progress
 /coverage
 /src
-/jest.config.js
-/tsconfig.json
+/e2e
+/scripts
 /.env
+tsconfig*.json
+vitest.config*.ts
+eslint.config.js
+pnpm-workspace.yaml
