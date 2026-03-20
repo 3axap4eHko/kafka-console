@@ -11,6 +11,7 @@ interface ConsumeOptions {
   count: number;
   skip: number;
   output?: string;
+  snapshot?: boolean;
 }
 
 function toError(error: unknown) {
@@ -59,7 +60,9 @@ export default async function consume(topic: string, opts: ConsumeOptions, { par
     let mode: (typeof MessagesStreamModes)[keyof typeof MessagesStreamModes] = MessagesStreamModes.LATEST;
     let offsets: { topic: string; partition: number; offset: bigint }[] | undefined;
 
-    if (opts.from === '0') {
+    if (opts.snapshot && !opts.from) {
+      mode = MessagesStreamModes.EARLIEST;
+    } else if (opts.from === '0') {
       mode = MessagesStreamModes.EARLIEST;
     } else if (opts.from) {
       const ts = /^\d+$/.test(opts.from) ? parseInt(opts.from, 10) : Date.parse(opts.from);
@@ -128,6 +131,15 @@ export default async function consume(topic: string, opts: ConsumeOptions, { par
         const activeStream = stream;
         let index = 0;
         const limit = opts.skip + opts.count;
+        const snapshotRemaining = opts.snapshot ? new Set<number>() : undefined;
+        if (snapshotRemaining) {
+          for (let p = 0; p < highWatermarks.length; p++) {
+            if (highWatermarks[p] > 0n) snapshotRemaining.add(p);
+          }
+          if (snapshotRemaining.size === 0) {
+            await closeStream();
+          }
+        }
         for await (const message of activeStream) {
           if (interrupted) break;
           if (index >= opts.skip) {
@@ -144,6 +156,10 @@ export default async function consume(topic: string, opts: ConsumeOptions, { par
               ahead,
             };
             output.write(JSON.stringify(msg) + '\n');
+          }
+          if (snapshotRemaining && message.offset >= highWatermarks[message.partition] - 1n) {
+            snapshotRemaining.delete(message.partition);
+            if (snapshotRemaining.size === 0) break;
           }
           if (++index >= limit) break;
         }

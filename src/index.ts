@@ -24,76 +24,73 @@ export function toInt(value: string) {
 const commander = new Command();
 
 commander
-  .option('-b, --brokers <brokers>', 'bootstrap server host', process.env.KAFKA_BROKERS || 'localhost:9092')
-  .option('-t, --timeout <timeout>', 'set a timeout of operation', toInt, toInt(process.env.KAFKA_TIMEOUT || '0'))
-  .option('--ssl', 'enable ssl', false)
-  .option('--insecure', 'disable TLS certificate verification', false)
-  .option('--mechanism <mechanism>', 'sasl mechanism', process.env.KAFKA_MECHANISM)
-  .option('--username <username>', 'sasl username', process.env.KAFKA_USERNAME)
-  .option('--password <password>', 'sasl password', process.env.KAFKA_PASSWORD)
-  .option('--oauth-bearer <oauthBearer>', 'sasl oauth bearer token', process.env.KAFKA_OAUTH_BEARER)
+  .name('kafka-console')
+  .description('A command-line interface for Apache Kafka operations')
+  .option('-b, --brokers <brokers>', 'comma-separated list of bootstrap broker addresses', process.env.KAFKA_BROKERS || 'localhost:9092')
+  .option('-t, --timeout <timeout>', 'operation timeout in milliseconds', toInt, toInt(process.env.KAFKA_TIMEOUT || '0'))
+  .option('--ssl', 'enable TLS connection', false)
+  .option('--insecure', 'disable TLS certificate verification (requires --ssl)', false)
+  .option('--mechanism <mechanism>', 'SASL mechanism: plain, scram-sha-256, scram-sha-512, oauthbearer', process.env.KAFKA_MECHANISM)
+  .option('--username <username>', 'SASL username (for plain/scram mechanisms)', process.env.KAFKA_USERNAME)
+  .option('--password <password>', 'SASL password (for plain/scram mechanisms)', process.env.KAFKA_PASSWORD)
+  .option('--oauth-bearer <oauthBearer>', 'SASL OAuth bearer token', process.env.KAFKA_OAUTH_BEARER)
   .version(version);
 
 commander
   .command('consume <topic>')
+  .description('Consume messages from a Kafka topic. Outputs one JSON object per line (JSONL) to stdout or a file.')
   .option('-g, --group <group>', 'consumer group name', `kafka-console-consumer-${Date.now()}`)
-  .option('-d, --data-format <data-format>', 'messages data-format: json, raw, or custom module path', 'json')
-  .option('-o, --output <filename>', 'write output to specified filename')
-  .option('-f, --from <from>', 'read messages from the specific timestamp in milliseconds or ISO 8601 format. Set 0 to read from the beginning')
-  .option('-c, --count <count>', 'a number of messages to read', toInt, Infinity)
-  .option('-s, --skip <skip>', 'a number of messages to skip', toInt, 0)
-  .description('Consume kafka topic events')
+  .option('-d, --data-format <data-format>', 'message value format: json, raw, or path to a custom formatter module', 'json')
+  .option('-o, --output <filename>', 'write output to a file instead of stdout')
+  .option('-f, --from <from>', 'start consuming from a timestamp (ms), ISO 8601 date, or 0 for the beginning', undefined)
+  .option('-c, --count <count>', 'maximum number of messages to consume', toInt, Infinity)
+  .option('-s, --skip <skip>', 'number of messages to skip before outputting', toInt, 0)
+  .option('--snapshot', 'consume all existing messages and exit; records the high watermark on start and stops when reached')
   .action(consumeCommand);
 
 commander
   .command('produce <topic>')
-  .option('-d, --data-format <data-format>', 'messages data-format: json, raw, or custom module path', 'json')
-  .option('-i, --input <filename>', 'input filename')
-  .option('-w, --wait <wait>', 'wait the time in ms after sending a message', toInt, 0)
-  .option('-H, --header <header>', 'set a static header', collect, [])
-  .description('Produce kafka topic events')
+  .description(
+    'Produce messages to a Kafka topic. Reads JSONL from stdin or a file. Each line must be a JSON object with a "value" field, and optional "key" and "headers" fields.',
+  )
+  .option('-d, --data-format <data-format>', 'message value format: json, raw, or path to a custom formatter module', 'json')
+  .option('-i, --input <filename>', 'read messages from a JSON array file instead of stdin')
+  .option('-w, --wait <wait>', 'delay in milliseconds between sending each message', toInt, 0)
+  .option('-H, --header <header>', 'static header added to every message (format: key:value), repeatable', collect, [])
   .action(produceCommand);
 
-commander.command('metadata').description('Displays kafka server metadata').action(metadataCommand);
+commander.command('metadata').description('Display cluster metadata: broker list, controller, topic partitions, replicas, and ISR').action(metadataCommand);
 
-commander.command('list').alias('ls').option('-a, --all', 'include internal topics').description('Lists kafka topics').action(listCommand);
+commander
+  .command('list')
+  .alias('ls')
+  .description('List topic names, one per line (JSONL). Use --all to include Kafka internal topics.')
+  .option('-a, --all', 'include internal topics (e.g. __consumer_offsets)')
+  .action(listCommand);
 
 commander
   .command('config')
-  .requiredOption('-r, --resource <resource>', 'resource', resourceParser)
-  .requiredOption('-n, --resourceName <resourceName>', 'resource name')
-  .description('Describes config for specific resource')
+  .description('Describe the configuration of a Kafka resource (topic, broker, or broker logger)')
+  .requiredOption('-r, --resource <resource>', 'resource type: topic, broker, broker_logger', resourceParser)
+  .requiredOption('-n, --resourceName <resourceName>', 'resource name (topic name or broker ID)')
   .action(configCommand);
 
-commander.command('topic:create <topic>').description('Creates kafka topic').action(createTopicCommand);
+commander
+  .command('topic:create <topic>')
+  .description('Create a new Kafka topic')
+  .option('-p, --partitions <partitions>', 'number of partitions', toInt, 1)
+  .option('-r, --replicas <replicas>', 'replication factor', toInt, 1)
+  .action(createTopicCommand);
 
-commander.command('topic:delete <topic>').description('Deletes kafka topic').action(deleteTopicCommand);
+commander.command('topic:delete <topic>').description('Delete a Kafka topic').action(deleteTopicCommand);
 
 commander
   .command('topic:offsets <topic> [timestamp]')
-  .description('Shows kafka topic offsets')
-  .option('-g, --group <group>', 'consumer group name')
+  .description(
+    'Show topic partition offsets. Without arguments shows high/low watermarks. With a timestamp (ms or ISO 8601) shows offsets at that point. With --group shows committed offsets for a consumer group.',
+  )
+  .option('-g, --group <group>', 'show committed offsets for this consumer group instead of watermarks')
   .action(fetchTopicOffsets);
-
-commander.on('--help', function () {
-  [
-    '',
-    'Examples:',
-    '',
-    '  General consumer usage',
-    '  $ npx kafka-console -b $KAFKA_BROKERS consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD',
-    '',
-    '  Extracting consumer output with jq',
-    '  $ npx kafka-console consume $KAFKA_TOPIC -g $KAFKA_TOPIC_GROUP -d ./formatter/avro.js | jq .value',
-    '',
-    '  General producer usage',
-    '  $ npx kafka-console produce $KAFKA_TOPIC -b $KAFKA_BROKERS --ssl --mechanism plain --username $KAFKA_USERNAME --password $KAFKA_PASSWORD',
-    '',
-    '  Preparing producer payload json data with jq',
-    '  $ cat payload.json|jq -r -c .[]|npx kafka-console produce $KAFKA_TOPIC -d ./formatter/avro.js',
-    '',
-  ].forEach((msg) => console.log(msg));
-});
 
 commander.parseAsync(process.argv).catch((e: Error) => {
   console.error(e.message);

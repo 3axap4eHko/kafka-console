@@ -15,7 +15,7 @@ describe('Cli test suite', () => {
     expect(descriptions).toHaveLength(2);
     expect(descriptions).toEqual(
       expect.arrayContaining([
-        'messages data-format: json, raw, or custom module path',
+        'message value format: json, raw, or path to a custom formatter module',
       ]),
     );
     expect(descriptions.join(' ')).not.toMatch(/\bjs\b/);

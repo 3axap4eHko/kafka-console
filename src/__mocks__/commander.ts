@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 
 export const commander: any = {
+  name: vi.fn(() => commander),
   command: vi.fn(() => commander),
   option: vi.fn(() => commander),
   version: vi.fn(() => commander),

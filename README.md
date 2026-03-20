@@ -1,272 +1,247 @@
 # Kafka Console CLI
 
-A powerful and easy-to-use command-line interface for Apache Kafka operations.
+A command-line interface for Apache Kafka operations.
 
 [![NPM version][npm-image]][npm-url]
 [![Downloads][downloads-image]][npm-url]
 
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Commands](#commands)
-  - [Consuming Messages](#consuming-messages)
-  - [Producing Messages](#producing-messages)
-  - [Topic Management](#topic-management)
-  - [Cluster Information](#cluster-information)
-- [Authentication](#authentication)
-- [Message Formats](#message-formats)
-- [Environment Variables](#environment-variables)
-- [Common Use Cases](#common-use-cases)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
-
-## Features
-
-- ✅ **Consumer & Producer** - Full support for consuming and producing messages
-- ✅ **Multiple Authentication Methods** - Plain, SCRAM-SHA-256/512, OAuth Bearer
-- ✅ **Flexible Message Formats** - JSON, raw text, or custom formatters
-- ✅ **Consumer Groups** - Full consumer group support with offset management
-- ✅ **Time-based Consumption** - Read messages from specific timestamps
-- ✅ **SSL/TLS Support** - Secure connections to Kafka clusters
-- ✅ **Topic Management** - Create, delete, and inspect topics
-- ✅ **Headers Support** - Read and write message headers
-- ✅ **GZIP Compression** - Automatic compression support
-- ✅ **TypeScript** - Full TypeScript support
-
 ## Installation
 
-### Global Installation (Recommended)
 ```bash
 npm install -g kafka-console
 ```
 
-### Local Installation
-```bash
-npm install kafka-console
-```
-
-### Using without Installation
+Or run without installing:
 ```bash
 npx kafka-console [command]
 ```
 
 ## Quick Start
 
-### 1. List all topics
 ```bash
-kafka-console list --brokers localhost:9092
+# List topics
+kafka-console list -b localhost:9092
+
+# Consume messages
+kafka-console consume my-topic -b localhost:9092 --from 0 --count 10
+
+# Produce a message
+echo '{"key":"k1","value":"hello"}' | kafka-console produce my-topic -b localhost:9092
 ```
 
-### 2. Consume messages from a topic
-```bash
-kafka-console consume my-topic --brokers localhost:9092
-```
+## Global Options
 
-### 3. Produce a message to a topic
-```bash
-echo '{"message": "Hello Kafka!"}' | kafka-console produce my-topic --brokers localhost:9092
-```
+These options apply to all commands:
+
+| Option | Description | Default | Env |
+|--------|-------------|---------|-----|
+| `-b, --brokers <brokers>` | Comma-separated broker addresses | `localhost:9092` | `KAFKA_BROKERS` |
+| `-t, --timeout <ms>` | Operation timeout in milliseconds | `0` (no timeout) | `KAFKA_TIMEOUT` |
+| `--ssl` | Enable TLS connection | `false` | |
+| `--insecure` | Disable TLS certificate verification (requires `--ssl`) | `false` | |
+| `--mechanism <mech>` | SASL mechanism: `plain`, `scram-sha-256`, `scram-sha-512`, `oauthbearer` | | `KAFKA_MECHANISM` |
+| `--username <user>` | SASL username (for plain/scram) | | `KAFKA_USERNAME` |
+| `--password <pass>` | SASL password (for plain/scram) | | `KAFKA_PASSWORD` |
+| `--oauth-bearer <token>` | SASL OAuth bearer token | | `KAFKA_OAUTH_BEARER` |
 
 ## Commands
 
-### Consuming Messages
+### consume
+
+Consume messages from a Kafka topic. Outputs one JSON object per line (JSONL).
 
 ```bash
 kafka-console consume <topic> [options]
 ```
 
-#### Options
+Each output line contains: `partition`, `offset`, `timestamp`, `headers`, `key`, `value`, `ahead`.
+
 | Option | Description | Default |
 |--------|-------------|---------|
-| `-g, --group <group>` | Consumer group name | `kafka-console-consumer-{timestamp}` |
-| `-f, --from <from>` | Start position (timestamp/ISO date/0 for beginning) | latest |
-| `-c, --count <count>` | Number of messages to read | unlimited |
-| `-s, --skip <skip>` | Number of messages to skip | 0 |
-| `-o, --output <file>` | Write output to file | stdout |
-| `-d, --data-format <format>` | Message format (json/raw/custom) | json |
+| `-g, --group <group>` | Consumer group name | auto-generated |
+| `-f, --from <from>` | Start position: `0` (beginning), timestamp in ms, or ISO 8601 date | latest |
+| `-c, --count <count>` | Maximum number of messages to consume | unlimited |
+| `-s, --skip <skip>` | Number of messages to skip before outputting | `0` |
+| `-o, --output <file>` | Write output to a file instead of stdout | stdout |
+| `-d, --data-format <fmt>` | Value format: `json`, `raw`, or path to custom formatter | `json` |
+| `--snapshot` | Consume all existing messages and exit (records high watermark on start) | `false` |
 
-#### Examples
-
-**Consume from beginning:**
+**Examples:**
 ```bash
-kafka-console consume my-topic --from 0
+# Consume from the beginning, stop after 10 messages
+kafka-console consume my-topic --from 0 --count 10
+
+# Snapshot: dump all existing messages to a file and exit
+kafka-console consume my-topic --snapshot -o dump.jsonl
+
+# Consume from a specific timestamp
+kafka-console consume my-topic --from "2024-06-01T00:00:00Z"
+
+# Skip first 100 messages, take next 50
+kafka-console consume my-topic --from 0 --skip 100 --count 50
+
+# Pipe to jq for filtering
+kafka-console consume my-topic | jq 'select(.value.level == "ERROR")'
+
+# Use raw format for non-JSON message values
+kafka-console consume my-topic -d raw
 ```
 
-**Consume last 10 messages:**
-```bash
-kafka-console consume my-topic --count 10
-```
+### produce
 
-**Consume from specific timestamp:**
-```bash
-kafka-console consume my-topic --from "2024-01-01T00:00:00Z"
-```
-
-**Consume with specific consumer group:**
-```bash
-kafka-console consume my-topic --group my-consumer-group
-```
-
-**Save output to file:**
-```bash
-kafka-console consume my-topic --output messages.json
-```
-
-**Extract specific fields with jq:**
-```bash
-kafka-console consume my-topic | jq '.value.userId'
-```
-
-### Producing Messages
+Produce messages to a Kafka topic. Reads JSONL from stdin or a JSON array from a file.
 
 ```bash
 kafka-console produce <topic> [options]
 ```
 
-#### Options
+Each input line must be a JSON object with a `value` field. Optional fields: `key`, `headers`.
+
 | Option | Description | Default |
 |--------|-------------|---------|
-| `-i, --input <file>` | Read input from file | stdin |
-| `-d, --data-format <format>` | Message format (json/raw/custom) | json |
-| `-H, --header <header>` | Add message header (format: key:value) | none |
-| `-w, --wait <ms>` | Wait time between messages | 0 |
+| `-d, --data-format <fmt>` | Value format: `json`, `raw`, or path to custom formatter | `json` |
+| `-i, --input <file>` | Read messages from a JSON array file instead of stdin | stdin |
+| `-w, --wait <ms>` | Delay between messages in milliseconds | `0` |
+| `-H, --header <header>` | Static header added to every message (`key:value`), repeatable | none |
 
-#### Examples
-
-**Produce single message:**
+**Examples:**
 ```bash
-echo '{"user": "john", "action": "login"}' | kafka-console produce my-topic
-```
+# Produce a single message
+echo '{"key":"user-1","value":{"name":"Alice"}}' | kafka-console produce my-topic
 
-**Produce from file:**
-```bash
+# Produce with static headers
+echo '{"value":"data"}' | kafka-console produce my-topic -H source:cli -H env:prod
+
+# Produce from a file (JSON array of messages)
 kafka-console produce my-topic --input messages.json
+
+# Produce raw text values
+echo '{"value":"plain text"}' | kafka-console produce my-topic -d raw
+
+# Pipe from another topic
+kafka-console consume source --snapshot | kafka-console produce dest
 ```
 
-**Produce with headers:**
+### list
+
+List topic names. Outputs one topic name per line (JSONL).
+
 ```bash
-echo '{"data": "test"}' | kafka-console produce my-topic --header "source:api" --header "version:1.0"
+kafka-console list [options]
+kafka-console ls [options]
 ```
 
-**Produce multiple messages from JSON array:**
-```bash
-cat users.json | jq -c '.[]' | kafka-console produce my-topic
-```
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-a, --all` | Include internal topics (e.g. `__consumer_offsets`) | `false` |
 
-**Produce with key (for partitioning):**
-```bash
-echo '{"key": "user123", "value": {"name": "John"}}' | kafka-console produce my-topic
-```
+### metadata
 
-### Topic Management
+Display cluster metadata: brokers, controller, topics, partitions, replicas, and ISR.
 
-#### Create Topic
-```bash
-kafka-console topic:create my-new-topic
-```
-
-#### Delete Topic
-```bash
-kafka-console topic:delete old-topic
-```
-
-#### Show Topic Offsets
-```bash
-kafka-console topic:offsets my-topic
-```
-
-#### Show Topic Offsets for Specific Timestamp
-```bash
-kafka-console topic:offsets my-topic "2024-01-01T00:00:00Z"
-```
-
-### Cluster Information
-
-#### List All Topics
-```bash
-kafka-console list
-```
-
-#### List Including Internal Topics
-```bash
-kafka-console list --all
-```
-
-#### Show Cluster Metadata
 ```bash
 kafka-console metadata
 ```
 
-#### Show Topic Configuration
+Output is a single JSONL object with `brokers`, `clusterId`, `controllerId`, and `topicMetadata` fields.
+
+### config
+
+Describe the configuration of a Kafka resource.
+
 ```bash
-kafka-console config --resource topic --resourceName my-topic
+kafka-console config [options]
+```
+
+| Option | Description |
+|--------|-------------|
+| `-r, --resource <type>` | Resource type: `topic`, `broker`, `broker_logger` (required) |
+| `-n, --resourceName <name>` | Resource name: topic name or broker ID (required) |
+
+**Examples:**
+```bash
+kafka-console config -r topic -n my-topic
+kafka-console config -r broker -n 1
+```
+
+### topic:create
+
+Create a new Kafka topic.
+
+```bash
+kafka-console topic:create <topic> [options]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-p, --partitions <n>` | Number of partitions | `1` |
+| `-r, --replicas <n>` | Replication factor | `1` |
+
+### topic:delete
+
+Delete a Kafka topic.
+
+```bash
+kafka-console topic:delete <topic>
+```
+
+### topic:offsets
+
+Show topic partition offsets.
+
+```bash
+kafka-console topic:offsets <topic> [timestamp] [options]
+```
+
+Without arguments: shows high/low watermarks per partition.
+With a timestamp (ms or ISO 8601): shows offsets at that point in time.
+With `--group`: shows committed offsets for a consumer group.
+
+| Option | Description |
+|--------|-------------|
+| `-g, --group <group>` | Show committed offsets for this consumer group |
+
+**Examples:**
+```bash
+# High/low watermarks
+kafka-console topic:offsets my-topic
+
+# Offsets at a specific time
+kafka-console topic:offsets my-topic "2024-06-01T00:00:00Z"
+
+# Consumer group committed offsets
+kafka-console topic:offsets my-topic -g my-consumer-group
 ```
 
 ## Authentication
 
-### SSL/TLS Connection
 ```bash
-kafka-console consume my-topic \
-  --brokers broker1:9093,broker2:9093 \
-  --ssl
-```
+# TLS (certificate verification enabled by default)
+kafka-console consume my-topic -b broker:9093 --ssl
 
-TLS certificate verification is enabled by default when `--ssl` is set. Use `--insecure` only for development or trusted self-signed environments.
+# TLS with self-signed certificate (skip verification)
+kafka-console consume my-topic -b broker:9093 --ssl --insecure
 
-```bash
-kafka-console consume my-topic \
-  --brokers broker1:9093 \
-  --ssl \
-  --insecure
-```
+# SASL/PLAIN
+kafka-console consume my-topic -b broker:9093 --ssl \
+  --mechanism plain --username myuser --password mypass
 
-### SASL/PLAIN
-```bash
-kafka-console consume my-topic \
-  --brokers broker:9093 \
-  --ssl \
-  --mechanism plain \
-  --username myuser \
-  --password mypassword
-```
+# SASL/SCRAM-SHA-256
+kafka-console consume my-topic -b broker:9093 --ssl \
+  --mechanism scram-sha-256 --username myuser --password mypass
 
-### SASL/SCRAM-SHA-256
-```bash
-kafka-console consume my-topic \
-  --brokers broker:9093 \
-  --ssl \
-  --mechanism scram-sha-256 \
-  --username myuser \
-  --password mypassword
-```
-
-### OAuth Bearer
-```bash
-kafka-console consume my-topic \
-  --brokers broker:9093 \
-  --ssl \
-  --mechanism oauthbearer \
-  --oauth-bearer "eyJhbGciOiJIUzI1NiIs..."
+# OAuth Bearer
+kafka-console consume my-topic -b broker:9093 --ssl \
+  --mechanism oauthbearer --oauth-bearer "eyJhbG..."
 ```
 
 ## Message Formats
 
-### JSON Format (Default)
-Messages are parsed as JSON:
-```bash
-echo '{"name": "Alice", "age": 30}' | kafka-console produce my-topic
-```
+**json** (default) - values are JSON-serialized on produce and JSON-parsed on consume.
 
-### Raw Format
-Messages are sent as plain text:
-```bash
-echo "Plain text message" | kafka-console produce my-topic --data-format raw
-```
+**raw** - values are passed as plain text strings, no serialization.
 
-### Custom Formatter
-Create a custom formatter module:
+**Custom formatter** - provide a path to a module exporting `encode` and `decode` functions:
 
 ```javascript
 // formatter/custom.js
@@ -276,128 +251,9 @@ module.exports = {
 };
 ```
 
-Use the custom formatter:
 ```bash
-kafka-console consume my-topic --data-format ./formatter/custom.js
+kafka-console consume my-topic -d ./formatter/custom.js
 ```
-
-## Environment Variables
-
-Set environment variables to avoid repeating common options:
-
-```bash
-export KAFKA_BROKERS=broker1:9092,broker2:9092
-export KAFKA_USERNAME=myuser
-export KAFKA_PASSWORD=mypassword
-export KAFKA_MECHANISM=plain
-export KAFKA_TIMEOUT=30000
-```
-
-All supported environment variables:
-- `KAFKA_BROKERS` - Comma-separated list of brokers
-- `KAFKA_TIMEOUT` - Operation timeout in milliseconds
-- `KAFKA_MECHANISM` - SASL mechanism
-- `KAFKA_USERNAME` - SASL username
-- `KAFKA_PASSWORD` - SASL password
-- `KAFKA_OAUTH_BEARER` - OAuth bearer token
-
-## Common Use Cases
-
-### Monitor Topic in Real-time
-```bash
-kafka-console consume logs --group monitor-group
-```
-
-### Replay Messages from Yesterday
-```bash
-kafka-console consume events --from "$(date -d yesterday --iso-8601)"
-```
-
-### Copy Messages Between Topics
-```bash
-kafka-console consume source-topic | kafka-console produce destination-topic
-```
-
-### Filter Messages
-```bash
-kafka-console consume all-events | jq 'select(.value.type == "ERROR")' 
-```
-
-### Count Messages in Topic
-```bash
-kafka-console consume my-topic --from 0 | wc -l
-```
-
-### Sample Messages
-```bash
-kafka-console consume large-topic --count 100
-```
-
-### Debug Message Headers
-```bash
-kafka-console consume my-topic | jq '.headers'
-```
-
-## Troubleshooting
-
-### Connection Issues
-
-**Problem:** Cannot connect to Kafka broker
-```bash
-Error: KafkaJSConnectionError: Connection timeout
-```
-**Solution:** 
-- Verify broker addresses are correct
-- Check network connectivity: `telnet broker-host 9092`
-- Ensure security groups/firewalls allow connection
-- For Docker: use host network or proper port mapping
-
-### Authentication Failures
-
-**Problem:** Authentication failed
-```bash
-Error: KafkaJSProtocolError: SASL authentication failed
-```
-**Solution:**
-- Verify credentials are correct
-- Check SASL mechanism matches broker configuration
-- Ensure SSL is enabled if required: `--ssl`
-
-### Consumer Group Issues
-
-**Problem:** Not receiving messages
-**Solution:**
-- Check consumer group offset: `kafka-console topic:offsets my-topic --group my-group`
-- Reset to beginning: `--from 0`
-- Use a new consumer group name
-
-### Message Format Errors
-
-**Problem:** JSON parsing errors
-```bash
-SyntaxError: Unexpected token...
-```
-**Solution:**
-- Verify message format matches specified data-format
-- Use `--data-format raw` for non-JSON messages
-- Check for malformed JSON with: `jq . < input.json`
-
-### Performance Issues
-
-**Problem:** Slow message consumption
-**Solution:**
-- Increase batch size in consumer configuration
-- Use multiple consumer instances with same group
-- Check network latency to brokers
-
-### SSL/TLS Issues
-
-**Problem:** SSL handshake failed
-**Solution:**
-- Ensure `--ssl` flag is used
-- Verify broker SSL port (usually 9093)
-- Check certificate validity
-- Use `--insecure` only when you intentionally want to skip certificate verification
 
 ## License
 
