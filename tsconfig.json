@@ -3,13 +3,13 @@
     "strict": true,
     "target": "ESNext",
     "module": "NodeNext",
-    "declaration": true,
+    "noEmit": true,
     "esModuleInterop": true,
     "allowJs": true,
     "moduleResolution": "NodeNext",
     "lib": ["ESNext"],
     "rootDir": "src",
-    "outDir": "build"
+    "rewriteRelativeImportExtensions": true
   },
   "include": ["src/*.ts"],
   "exclude": ["node_modules", "__tests__"]

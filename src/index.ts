@@ -1,14 +1,14 @@
 import { Command } from 'commander';
-import { resourceParser } from './utils/kafka.js';
+import { resourceParser } from './utils/kafka.ts';
 
-import consumeCommand from './commands/consume.js';
-import produceCommand from './commands/produce.js';
-import metadataCommand from './commands/metadata.js';
-import listCommand from './commands/list.js';
-import configCommand from './commands/config.js';
-import createTopicCommand from './commands/createTopic.js';
-import deleteTopicCommand from './commands/deleteTopic.js';
-import fetchTopicOffsets from './commands/fetchTopicOffsets.js';
+import consumeCommand from './commands/consume.ts';
+import produceCommand from './commands/produce.ts';
+import metadataCommand from './commands/metadata.ts';
+import listCommand from './commands/list.ts';
+import configCommand from './commands/config.ts';
+import createTopicCommand from './commands/createTopic.ts';
+import deleteTopicCommand from './commands/deleteTopic.ts';
+import fetchTopicOffsets from './commands/fetchTopicOffsets.ts';
 
 import { createRequire } from 'node:module';
 const { version } = createRequire(import.meta.url)('../package.json') as { version: string };

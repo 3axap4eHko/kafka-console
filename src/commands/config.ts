@@ -1,6 +1,6 @@
 import { Admin } from '@platformatic/kafka';
-import { getClientConfigFromOpts, resourceTypeToNumber, type CommandContext, type ConfigResourceType } from '../utils/kafka.js';
-import { writeJsonlMany } from '../utils/output.js';
+import { getClientConfigFromOpts, resourceTypeToNumber, type CommandContext, type ConfigResourceType } from '../utils/kafka.ts';
+import { writeJsonlMany } from '../utils/output.ts';
 
 interface ConfigOptions {
   resource: ConfigResourceType;
