@@ -5,11 +5,13 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "kcli": "src/cli.ts",
-    "kafka-console": "src/cli.ts"
+    "kcli": "build/cli.js",
+    "kafka-console": "build/cli.js"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build",
     "test": "vitest run",
     "test:cov": "COVERAGE=1 vitest run",
     "test:e2e": "vitest run --config vitest.config.e2e.ts",
