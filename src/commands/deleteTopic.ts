@@ -1,5 +1,5 @@
 import { Admin } from '@platformatic/kafka';
-import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.js';
+import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.ts';
 
 export default async function deleteTopic(topic: string, _opts: object, { parent }: CommandContext) {
   const config = getClientConfigFromOpts(parent.opts());

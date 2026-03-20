@@ -1,6 +1,6 @@
 import { Admin } from '@platformatic/kafka';
-import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.js';
-import { writeJsonlMany } from '../utils/output.js';
+import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.ts';
+import { writeJsonlMany } from '../utils/output.ts';
 
 export default async function metadata(_opts: object, { parent }: CommandContext) {
   const config = getClientConfigFromOpts(parent.opts());

@@ -1,5 +1,5 @@
-import { getClientConfigFromOpts, fetchTopicOffsets, fetchTopicOffsetsByTimestamp, fetchConsumerGroupOffsets, type CommandContext } from '../utils/kafka.js';
-import { writeJsonlMany } from '../utils/output.js';
+import { getClientConfigFromOpts, fetchTopicOffsets, fetchTopicOffsetsByTimestamp, fetchConsumerGroupOffsets, type CommandContext } from '../utils/kafka.ts';
+import { writeJsonlMany } from '../utils/output.ts';
 
 interface FetchTopicOffsetsOptions {
   group?: string;

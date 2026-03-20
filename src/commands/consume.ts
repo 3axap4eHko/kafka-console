@@ -1,8 +1,8 @@
 import * as Fs from 'fs';
 import { finished } from 'node:stream/promises';
 import { Consumer, stringDeserializers, MessagesStreamModes, ListOffsetTimestamps } from '@platformatic/kafka';
-import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.js';
-import { getFormatter } from '../utils/formatters.js';
+import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.ts';
+import { getFormatter } from '../utils/formatters.ts';
 
 interface ConsumeOptions {
   group: string;

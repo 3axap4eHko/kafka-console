@@ -5,16 +5,16 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "kcli": "build/cli.js",
-    "kafka-console": "build/cli.js"
+    "kcli": "src/cli.ts",
+    "kafka-console": "src/cli.ts"
   },
   "scripts": {
-    "build": "rm -rf build && tsc",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:cov": "COVERAGE=1 vitest run",
     "test:e2e": "vitest run --config vitest.config.e2e.ts",
     "lint": "eslint .",
-    "kcli": "node src/index.ts"
+    "kcli": "node --experimental-transform-types --disable-warning=ExperimentalWarning src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -36,11 +36,9 @@
   "homepage": "https://github.com/3axap4eHko/kafka-console#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/debug": "^4.1.12",
-    "@types/js-yaml": "^4.0.9",
+    "@types/debug": "^4.1.13",
     "@types/node": "^25.5.0",
     "@vitest/coverage-v8": "^4.1.0",
-    "dotenv": "^17.3.1",
     "eslint": "^10.0.3",
     "eslint-plugin-prettier": "^5.5.5",
     "typescript": "^5.9.3",
