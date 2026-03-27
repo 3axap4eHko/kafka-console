@@ -4,6 +4,8 @@ import { Producer, stringSerializers } from '@platformatic/kafka';
 import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.ts';
 import { getFormatter } from '../utils/formatters.ts';
 
+type Compression = ConstructorParameters<typeof Producer>[0]['compression'];
+
 interface InputMessage {
   key?: string;
   value: unknown;
@@ -66,6 +68,7 @@ interface ProduceOptions {
   header: string[];
   input?: string;
   wait: number;
+  compression?: Compression;
 }
 
 export default async function produce(topic: string, opts: ProduceOptions, { parent }: CommandContext) {
@@ -73,6 +76,7 @@ export default async function produce(topic: string, opts: ProduceOptions, { par
   const producer = new Producer({
     ...config,
     serializers: stringSerializers,
+    compression: opts.compression,
   });
 
   const staticHeaders: Record<string, string> = {};

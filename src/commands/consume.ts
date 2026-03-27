@@ -1,7 +1,7 @@
 import * as Fs from 'fs';
 import { finished } from 'node:stream/promises';
-import { Consumer, stringDeserializers, MessagesStreamModes, ListOffsetTimestamps } from '@platformatic/kafka';
-import { getClientConfigFromOpts, type CommandContext } from '../utils/kafka.ts';
+import { Consumer, stringDeserializers, ListOffsetTimestamps } from '@platformatic/kafka';
+import { getClientConfigFromOpts, resolveConsumeMode, type CommandContext } from '../utils/kafka.ts';
 import { getFormatter } from '../utils/formatters.ts';
 
 interface ConsumeOptions {
@@ -57,41 +57,16 @@ export default async function consume(topic: string, opts: ConsumeOptions, { par
   let aborted = false;
 
   try {
-    let mode: (typeof MessagesStreamModes)[keyof typeof MessagesStreamModes] = MessagesStreamModes.LATEST;
-    let offsets: { topic: string; partition: number; offset: bigint }[] | undefined;
-
-    if (opts.snapshot && !opts.from) {
-      mode = MessagesStreamModes.EARLIEST;
-    } else if (opts.from === '0') {
-      mode = MessagesStreamModes.EARLIEST;
-    } else if (opts.from) {
-      const ts = /^\d+$/.test(opts.from) ? parseInt(opts.from, 10) : Date.parse(opts.from);
-
-      if (Number.isNaN(ts)) {
-        throw new Error(`Invalid timestamp "${opts.from}"`);
-      }
-
-      const offsetsMap = await consumer.listOffsets({ topics: [topic], timestamp: BigInt(ts) });
-      const partitionOffsets = offsetsMap.get(topic);
-      if (partitionOffsets) {
-        offsets = [];
-        for (let partition = 0; partition < partitionOffsets.length; partition++) {
-          offsets.push({ topic, partition, offset: partitionOffsets[partition] });
-        }
-        mode = MessagesStreamModes.MANUAL;
-      }
-    }
+    const fromArg = opts.snapshot && !opts.from ? '0' : opts.from;
+    const { mode, offsets } = await resolveConsumeMode(consumer, topic, fromArg);
 
     const consumeOptions: Parameters<typeof consumer.consume>[0] = {
       topics: [topic],
       mode,
+      offsets,
       sessionTimeout: 30000,
       heartbeatInterval: 1000,
     };
-
-    if (offsets) {
-      consumeOptions.offsets = offsets;
-    }
 
     try {
       stream = await consumer.consume(consumeOptions);

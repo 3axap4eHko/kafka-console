@@ -1,4 +1,4 @@
-import { Admin, ConfigResourceTypes, Consumer, stringDeserializers, ListOffsetTimestamps } from '@platformatic/kafka';
+import { Admin, ConfigResourceTypes, Consumer, stringDeserializers, ListOffsetTimestamps, MessagesStreamModes } from '@platformatic/kafka';
 import type { ConnectionOptions } from 'node:tls';
 
 export type ConfigResourceType = 'UNKNOWN' | 'TOPIC' | 'BROKER' | 'BROKER_LOGGER';
@@ -149,6 +149,36 @@ export async function fetchTopicOffsetsByTimestamp(
   } finally {
     await consumer.close();
   }
+}
+
+export async function resolveConsumeMode(
+  consumer: { listOffsets: InstanceType<typeof Consumer>['listOffsets'] },
+  topic: string,
+  from: string | undefined,
+): Promise<{
+  mode: (typeof MessagesStreamModes)[keyof typeof MessagesStreamModes];
+  offsets?: { topic: string; partition: number; offset: bigint }[];
+}> {
+  if (!from || from === '0') {
+    return { mode: from === '0' ? MessagesStreamModes.EARLIEST : MessagesStreamModes.LATEST };
+  }
+
+  const ts = /^\d+$/.test(from) ? parseInt(from, 10) : Date.parse(from);
+  if (Number.isNaN(ts)) {
+    throw new Error(`Invalid timestamp "${from}"`);
+  }
+
+  const offsetsMap = await consumer.listOffsets({ topics: [topic], timestamp: BigInt(ts) });
+  const partitionOffsets = offsetsMap.get(topic);
+  if (!partitionOffsets) {
+    return { mode: MessagesStreamModes.LATEST };
+  }
+
+  const offsets: { topic: string; partition: number; offset: bigint }[] = [];
+  for (let partition = 0; partition < partitionOffsets.length; partition++) {
+    offsets.push({ topic, partition, offset: partitionOffsets[partition] });
+  }
+  return { mode: MessagesStreamModes.MANUAL, offsets };
 }
 
 export async function fetchConsumerGroupOffsets(

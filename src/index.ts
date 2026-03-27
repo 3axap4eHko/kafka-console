@@ -9,6 +9,8 @@ import configCommand from './commands/config.ts';
 import createTopicCommand from './commands/createTopic.ts';
 import deleteTopicCommand from './commands/deleteTopic.ts';
 import fetchTopicOffsets from './commands/fetchTopicOffsets.ts';
+import copyTopicCommand from './commands/copyTopic.ts';
+import dumpTopicCommand from './commands/dumpTopic.ts';
 
 import { createRequire } from 'node:module';
 const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
@@ -57,6 +59,7 @@ commander
   .option('-i, --input <filename>', 'read messages from a JSON array file instead of stdin')
   .option('-w, --wait <wait>', 'delay in milliseconds between sending each message', toInt, 0)
   .option('-H, --header <header>', 'static header added to every message (format: key:value), repeatable', collect, [])
+  .option('-C, --compression <algorithm>', 'compression algorithm: none, gzip, snappy, lz4, zstd')
   .action(produceCommand);
 
 commander.command('metadata').description('Display cluster metadata: broker list, controller, topic partitions, replicas, and ISR').action(metadataCommand);
@@ -91,6 +94,29 @@ commander
   )
   .option('-g, --group <group>', 'show committed offsets for this consumer group instead of watermarks')
   .action(fetchTopicOffsets);
+
+commander
+  .command('topic:copy <source> <dest>')
+  .description(
+    'Copy messages from one topic to another. Reads all messages from <source> (snapshot mode) and writes them to <dest> in batches. Preserves keys, values, and headers. Exits when all existing messages are copied.',
+  )
+  .option('-g, --group <group>', 'consumer group name', `kafka-console-copy-${Date.now()}`)
+  .option('-f, --from <from>', 'start from a timestamp (ms), ISO 8601 date, or 0 for the beginning', '0')
+  .option('-c, --count <count>', 'maximum number of messages to copy', toInt, Infinity)
+  .option('--batch-size <size>', 'number of messages per producer send call', toInt, 500)
+  .option('-C, --compression <algorithm>', 'producer compression: none, gzip, snappy, lz4, zstd')
+  .action(copyTopicCommand);
+
+commander
+  .command('topic:dump <topic>')
+  .description(
+    'Dump messages from a topic to a JSONL file. Each line contains partition, offset, timestamp, headers, key, and the raw value string. Exits when all existing messages are written.',
+  )
+  .requiredOption('-o, --output <filename>', 'output file path')
+  .option('-g, --group <group>', 'consumer group name', `kafka-console-dump-${Date.now()}`)
+  .option('-f, --from <from>', 'start from a timestamp (ms), ISO 8601 date, or 0 for the beginning', '0')
+  .option('-c, --count <count>', 'maximum number of messages to dump', toInt, Infinity)
+  .action(dumpTopicCommand);
 
 commander.parseAsync(process.argv).catch((e: Error) => {
   console.error(e.message);

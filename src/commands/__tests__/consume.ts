@@ -167,6 +167,7 @@ describe('consume command', () => {
       createContext(),
     );
 
+    await new Promise((r) => setTimeout(r, 0));
     process.emit('SIGINT');
 
     await expect(
