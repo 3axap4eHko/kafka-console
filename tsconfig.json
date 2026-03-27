@@ -8,6 +8,7 @@
     "allowJs": true,
     "moduleResolution": "NodeNext",
     "lib": ["ESNext"],
+    "types": ["node"],
     "rootDir": "src",
     "rewriteRelativeImportExtensions": true
   },
