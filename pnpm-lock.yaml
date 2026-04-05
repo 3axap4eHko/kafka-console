@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@platformatic/kafka':
-        specifier: ^1.32.0
-        version: 1.32.0
+        specifier: ^1.32.1
+        version: 1.32.1
       commander:
         specifier: ^14.0.3
         version: 14.0.3
@@ -248,12 +248,12 @@ packages:
     resolution: {integrity: sha512-xQD5JSkQc4D15suOk7FezGDmh6Vb5e4phDoFZ/ASpa3Ft+3fOVwFOENmHtC1561zm/xHnKwI91NbMF8inpbk0Q==}
     engines: {node: '>= 22.19.0'}
 
-  '@platformatic/kafka@1.32.0':
-    resolution: {integrity: sha512-h1gIRo8DAABb4ZGbob4hBS66xg7M9C8xo8AdIu+DhUNhh/hOkE7ErJFwA8jKIpHfRzF9g6VqHTY4CUWNCBZe2A==}
+  '@platformatic/kafka@1.32.1':
+    resolution: {integrity: sha512-shbY29XXwe/FYj7kVELmSl5tz8s42NI61gKAQqs3lV1wIqfFRCap5nYqwTiP0EMbIX82GaOw4PYU6JHBThRcvA==}
     engines: {node: '>= 20.19.4 || >= 22.18.0 || >= 24.6.0'}
 
-  '@platformatic/wasm-utils@0.1.0':
-    resolution: {integrity: sha512-1fMkKsdud0pNlBh0JRELpWi3NE3/Kb0SCKR+5g2vH3ANDNlWDPJVDjNIJZYNdXA73yBfTVVve7xxBV22PUqZeg==}
+  '@platformatic/wasm-utils@0.2.1':
+    resolution: {integrity: sha512-5rNl4h5n+hZG4LjiItQ7bVfHBqTypjldP46NXrOYW64cZr87ahngK1s9nEtCpByWg7WWjRLSxyCytgJK5gNdwQ==}
     engines: {node: '>= 22.19.0'}
 
   '@protobufjs/aspromise@1.1.2':
@@ -1293,10 +1293,10 @@ snapshots:
 
   '@platformatic/dynamic-buffer@0.3.1': {}
 
-  '@platformatic/kafka@1.32.0':
+  '@platformatic/kafka@1.32.1':
     dependencies:
       '@platformatic/dynamic-buffer': 0.3.1
-      '@platformatic/wasm-utils': 0.1.0
+      '@platformatic/wasm-utils': 0.2.1
       ajv: 8.18.0
       avsc: 5.7.9
       debug: 4.4.3
@@ -1309,7 +1309,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@platformatic/wasm-utils@0.1.0':
+  '@platformatic/wasm-utils@0.2.1':
     dependencies:
       '@platformatic/dynamic-buffer': 0.3.1
 
