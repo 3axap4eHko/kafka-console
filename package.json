@@ -43,7 +43,7 @@
     "eslint": "^10.2.0",
     "eslint-plugin-prettier": "^5.5.5",
     "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.1",
+    "typescript-eslint": "^8.58.2",
     "vitest": "^4.1.4"
   },
   "dependencies": {
