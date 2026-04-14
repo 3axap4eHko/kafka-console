@@ -1,6 +1,6 @@
 {
   "name": "kafka-console",
-  "version": "3.1.7",
+  "version": "3.1.8",
   "description": "Kafka CLI tool",
   "type": "module",
   "bin": {
