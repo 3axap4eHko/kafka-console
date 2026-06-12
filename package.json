@@ -50,5 +50,5 @@
     "@platformatic/kafka": "^1.34.0",
     "commander": "^14.0.3"
   },
-  "packageManager": "pnpm@10.34.2"
+  "packageManager": "pnpm@10.34.3"
 }
