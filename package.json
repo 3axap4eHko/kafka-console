@@ -39,12 +39,12 @@
     "@eslint/js": "^10.0.1",
     "@types/debug": "^4.1.13",
     "@types/node": "^25.9.3",
-    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.9",
     "eslint": "^10.5.0",
     "eslint-plugin-prettier": "^5.5.6",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.0",
-    "vitest": "^4.1.8"
+    "typescript-eslint": "^8.61.1",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "@platformatic/kafka": "^1.34.0",
