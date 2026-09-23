@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: 0 0 * * *
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing version tag to publish'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -13,8 +18,9 @@ jobs:
       id-token: write
     steps:
       - name: Run CI/CD Pipeline
-        uses: zource-dev/action@38b6b5643b91c18111dd2dbcc6c3d82328a0ccba
+        uses: zource-dev/action@0c0685faa5157227f6ceb670641657bfcca488d9
         with:
+          release_tag: ${{ inputs.release_tag }}
           node_version: '24.x'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           autoupdate: minor
@@ -42,4 +48,3 @@ jobs:
           pnpm init
           pnpm dlx kafka-console --help
         shell: bash
-
