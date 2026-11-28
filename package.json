@@ -40,7 +40,7 @@
     "@types/debug": "^4.1.13",
     "@types/node": "^25.9.12",
     "@vitest/coverage-v8": "^4.1.12",
-    "eslint": "^10.15.0",
+    "eslint": "^10.16.0",
     "eslint-plugin-prettier": "^5.5.7",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.74.0",
